@@ -1,0 +1,16 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+agent-runtime/.eve/
+agent-runtime/.vercel/
+dist/CH347_Debug_Studio.zip
+agent-runtime/.output
+agent-runtime/.cache/
+
+# Local hosting identity and generated runtime files
+.openai/
+.DS_Store

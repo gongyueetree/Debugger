@@ -1,0 +1,43 @@
+{
+  "version": "0.2.0",
+  "board": "LA_RP2040",
+  "flash_bytes": 8388608,
+  "boot_stage2": "generic SPI 0x03",
+  "sdk": {
+    "version": "2.3.0",
+    "commit": "98a542c1a62fb549ffb5d66a3e5892b06276b670"
+  },
+  "upstream": {
+    "debugprobe": "262f9625d75a2bad8d76cc228ee5e21ca3a64d3a",
+    "sump8": "1b93e38126ca159a57b13c624b816e8e6eee15e9"
+  },
+  "firmwares": [
+    {
+      "profile": "dap",
+      "filename": "la-rp2040-dap.uf2",
+      "bytes": 106496,
+      "sha256": "afa0615f90b8a99e82a8451b339a98d5d787497c0548acdce0f32ddcc0cf7fc3",
+      "binary_bytes": 53044,
+      "build": "compiled",
+      "hardware_validation": "pending"
+    },
+    {
+      "profile": "sump8",
+      "filename": "la-rp2040-sump8.uf2",
+      "bytes": 125440,
+      "sha256": "39dda76b54fa8aacd39d2b3144e887aa0c44f3224dfeb98558e4f6b6058c1979",
+      "binary_bytes": 62648,
+      "build": "compiled",
+      "hardware_validation": "pending"
+    },
+    {
+      "profile": "adc12",
+      "filename": "la-rp2040-adc12.uf2",
+      "bytes": 47104,
+      "sha256": "2d60a8e9e4621bde7e2e08e0c080178dadaf1fe6ed728e4a282f7652a119ca86",
+      "binary_bytes": 23304,
+      "build": "compiled",
+      "hardware_validation": "pending"
+    }
+  ]
+}

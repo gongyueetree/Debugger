@@ -1,0 +1,75 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6a9060a..5e160a0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -89,3 +89,8 @@ target_link_libraries(debugprobe PRIVATE
+ pico_set_binary_type(debugprobe copy_to_ram)
+ 
+ pico_add_extra_outputs(debugprobe)
++
++# No C++ runtime is used; Pico SDK provides allocation overrides.
++set_target_properties(debugprobe PROPERTIES LINKER_LANGUAGE C)
++
++target_link_libraries(debugprobe PRIVATE m)
+diff --git a/get-version.sh b/get-version.sh
+index 535d91f..47937a2 100755
+--- a/get-version.sh
++++ b/get-version.sh
+@@ -1,21 +1,8 @@
+ #!/bin/sh
+-if command -v git &>/dev/null
+-then
+-    VERSION=$(git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)   
+-else
+-    VERSION="unknown"
+-fi
+-
+-if [ ! -e generated/probe ]
+-then
+-    mkdir -p generated/probe
+-fi
+-
+-cat > generated/probe/version.h << EOF
++mkdir -p generated/probe
++cat > generated/probe/version.h <<'EOF'
+ #ifndef _PROBE_VERSION_H
+ #define _PROBE_VERSION_H
+-
+-#define PROBE_VERSION "${VERSION}"
+-
++#define PROBE_VERSION "la-rp2040-0.2.0+262f962"
+ #endif
+ EOF
+diff --git a/include/board_pico_config.h b/include/board_pico_config.h
+index f732fb7..d7ba3ab 100644
+--- a/include/board_pico_config.h
++++ b/include/board_pico_config.h
+@@ -31,20 +31,20 @@
+ 
+ // PIO config
+ #define PROBE_SM 0
+-#define PROBE_PIN_OFFSET 2
+-#define PROBE_PIN_SWCLK (PROBE_PIN_OFFSET + 0) // 2
+-#define PROBE_PIN_SWDIO (PROBE_PIN_OFFSET + 1) // 3
++#define PROBE_PIN_OFFSET 20
++#define PROBE_PIN_SWCLK (PROBE_PIN_OFFSET + 0) // GP20
++#define PROBE_PIN_SWDIO (PROBE_PIN_OFFSET + 1) // GP21
+ // Target reset config
+-#define PROBE_PIN_RESET 1
++#define PROBE_PIN_RESET 22
+ 
+ // UART config
+-#define PROBE_UART_TX 4
+-#define PROBE_UART_RX 5
++#define PROBE_UART_TX 24
++#define PROBE_UART_RX 25
+ #define PROBE_UART_INTERFACE uart1
+ #define PROBE_UART_BAUDRATE 115200
+ 
+-#define PROBE_USB_CONNECTED_LED 25
++#define PROBE_USB_CONNECTED_LED 0
+ 
+-#define PROBE_PRODUCT_STRING "Debugprobe on Pico (CMSIS-DAP)"
++#define PROBE_PRODUCT_STRING "LA-RP2040 CMSIS-DAP"
+ 
+ #endif

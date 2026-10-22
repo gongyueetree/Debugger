@@ -1,0 +1,153 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d7a77fc..69d9623 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -48,3 +48,8 @@ target_link_libraries(${PROJECT_NAME}
+ 
+ pico_enable_stdio_usb(${PROJECT_NAME} 1)
+ pico_enable_stdio_uart(${PROJECT_NAME} 0)
++
++target_compile_definitions(logic_analyzer PRIVATE PICO_STDIO_USB_DEFAULT_CRLF=0 PICO_STDIO_USB_ENABLE_RESET_VIA_BAUD_RATE=0 USBD_PRODUCT="LA-RP2040 SUMP8 v1")
++
++# No C++ runtime is used; Pico SDK provides allocation overrides.
++set_target_properties(logic_analyzer PROPERTIES LINKER_LANGUAGE C)
+diff --git a/src/capture.c b/src/capture.c
+index 333df63..5d6ebe1 100644
+--- a/src/capture.c
++++ b/src/capture.c
+@@ -81,8 +81,8 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+ 
+     // Set sys clock
+     if (rate > RATE_CHANGE_CLK) {
+-        if (clock_get_hz(clk_sys) != 200000000) {
+-            set_sys_clock_khz(200000, true);
++        if (clock_get_hz(clk_sys) != 100000000) {
++            set_sys_clock_khz(100000, true);
+             debug_reinit();
+         }
+         clk_div_ = (float)clock_get_hz(clk_sys) / rate;
+@@ -204,7 +204,7 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+     sm_trigger_mask_ = 0;
+     triggered_channel_ = -1;
+     uint i = 0;
+-    while (capture_config_.trigger[i].is_enabled) {
++    while (i < MAX_TRIGGER_COUNT && capture_config_.trigger[i].is_enabled) {
+         set_trigger(capture_config_.trigger[i]);
+         i++;
+     }
+@@ -333,7 +333,7 @@ static inline bool set_trigger(trigger_t trigger) {
+                 break;
+         }
+         sm_config_set_clkdiv(&pio_config_trigger_[trigger_count_], clk_div_);
+-        sm_config_set_in_pins(&pio_config_trigger_[trigger_count_], trigger.pin);
++        sm_config_set_in_pins(&pio_config_trigger_[trigger_count_], pin_base_ + trigger.pin);
+         pio_sm_init(pio1, sm_trigger_[trigger_count_], offset_trigger_[trigger_count_],
+                     &pio_config_trigger_[trigger_count_]);
+         sm_trigger_mask_ |= 1 << sm_trigger_[trigger_count_];
+diff --git a/src/common.h b/src/common.h
+index e360147..1bbfe22 100644
+--- a/src/common.h
++++ b/src/common.h
+@@ -28,7 +28,7 @@ extern "C" {
+ #include "pico/types.h"
+ 
+ // Number of channels
+-#define CHANNEL_COUNT 16
++#define CHANNEL_COUNT 8
+ 
+ // Maximum number of triggers
+ #define TRIGGERS_COUNT 4
+diff --git a/src/main.c b/src/main.c
+index 92a37b0..43cd2e2 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -47,18 +47,18 @@ int main() {
+         config_.trigger_edge ? "enabled" : "disabled");
+ 
+     // led blink
+-    gpio_init(PICO_DEFAULT_LED_PIN);
+-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+-    gpio_put(PICO_DEFAULT_LED_PIN, 1);
++    gpio_init(0);
++    gpio_set_dir(0, GPIO_OUT);
++    gpio_put(0, 1);
+     sleep_ms(500);
+-    gpio_put(PICO_DEFAULT_LED_PIN, 0);
++    gpio_put(0, 0);
+ 
+-    capture_init(0, capture_config_.channels, complete_handler);
++    capture_init(20, capture_config_.channels, complete_handler);
+ 
+     while (true) {
+         command_t command = sump_read();
+         if (command == COMMAND_CAPTURE) {
+-            gpio_put(PICO_DEFAULT_LED_PIN, 1);
++            gpio_put(0, 1);
+             capture();
+             debug_block("\nCapture complete. Samples count: %u Pre trigger count: %u ", get_samples_count(),
+                         get_pre_trigger_count());
+@@ -70,7 +70,7 @@ int main() {
+         } else if (command == COMMAND_RESET) {
+             if (capture_is_busy()) capture_abort();
+             sump_reset();
+-            gpio_put(PICO_DEFAULT_LED_PIN, 0);
++            gpio_put(0, 0);
+         }
+         if (send_samples_) {
+             if (clock_get_hz(clk_sys) != 100000000) {
+@@ -78,7 +78,7 @@ int main() {
+                 debug_reinit();
+             }
+             sump_send_samples();
+-            gpio_put(PICO_DEFAULT_LED_PIN, 0);
++            gpio_put(0, 0);
+             send_samples_ = false;
+         }
+     }
+@@ -93,27 +93,7 @@ void complete_handler(void) {
+ }
+ 
+ void set_pin_config(void) {
+-    /*
+-     *   Connect GPIO to GND at boot to select/enable:
+-     *   - GPIO 19: triggers based on stages. Otherwise all triggers are trigger edge
+-     *   - GPIO 18: debug mode on. Output is on GPIO 16 at 115200bps.
+-     *
+-     *   Defaults (option not grounded):
+-     *   - Override trigger edge enabled
+-     *   - Debug disabled
+-     */
+-
+-    // configure pins
+-    gpio_init_mask((1 << GPIO_DEBUG_ENABLE) | (1 << GPIO_TRIGGER_STAGES));
+-    gpio_set_dir_masked((1 << GPIO_DEBUG_ENABLE) | (1 << GPIO_TRIGGER_STAGES), false);
+-    gpio_pull_up(GPIO_TRIGGER_STAGES);
+-    gpio_pull_up(GPIO_DEBUG_ENABLE);
+-
+-    // set default config
+-    config_.trigger_edge = true;
++    // This board has no strap switches on GP18/19. Use explicit SUMP trigger types.
++    config_.trigger_edge = false;
+     config_.debug = false;
+-
+-    // read pin config
+-    if (!gpio_get(GPIO_TRIGGER_STAGES)) config_.trigger_edge = false;
+-    if (!gpio_get(GPIO_DEBUG_ENABLE)) config_.debug = true;
+-}
+\ No newline at end of file
++}
+diff --git a/src/protocol_sump.c b/src/protocol_sump.c
+index 49eb914..c1025e1 100644
+--- a/src/protocol_sump.c
++++ b/src/protocol_sump.c
+@@ -25,8 +25,8 @@
+ // Sump metadata
+ #define DEVICE_NAME "RP2040"
+ #define DEVICE_VERSION "v0.1"
+-#define MAX_TOTAL_SAMPLES 200000   // bytes
+-#define MAX_SAMPLE_RATE 200000000  // Hz. Maximum rate for sump protocol
++#define MAX_TOTAL_SAMPLES 100000   // bytes
++#define MAX_SAMPLE_RATE 100000000  // Hz. Maximum rate for sump protocol
+ #define CLOCK_RATE \
+     100000000  // Hz. This is required because clock divisor provided by libsigrok, is based on this value
+ #define PROTOCOL_VERSION 2
