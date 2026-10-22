@@ -89,6 +89,10 @@ class HTTPTest(unittest.TestCase):
  def test_good_origin_and_token(self):
   code,body,h=self.req('/api/jobs',{'Origin':'https://approved.test','Authorization':'Bearer test-token'});self.assertEqual(code,200);self.assertEqual(json.loads(body),[]);self.assertEqual(h['Access-Control-Allow-Origin'],'https://approved.test')
  def test_preflight(self):self.assertEqual(self.req('/api/prepare',{'Origin':'https://approved.test'},'OPTIONS')[0],204)
+ def test_hardware_static_types_and_json_bytes(self):
+  for path,kind in [('hardware/ch347/board-top.png','image/png'),('hardware/ch347/pcb-front.svg','image/svg+xml'),('hardware/ch347/board.glb','model/gltf-binary'),('hardware/manifest.json','application/json')]:
+   code,raw,h=self.req('/'+path);self.assertEqual(code,200);self.assertEqual(h['Content-Type'],kind);self.assertGreater(len(raw),100)
+   if kind=='application/json':self.assertIn('boards',json.loads(raw))
  def test_static_path_escape(self):self.assertEqual(self.req('/../bridge/server.py')[0],404)
  def test_api_prepare_execute_history(self):
   studio=self.server.studio;device={'id':'test','name':'CH347T','mode':3,'bcd':0x544,'version':'5.44'}

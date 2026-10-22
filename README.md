@@ -147,7 +147,7 @@ start-windows.bat    Windows 启动
 tests/               硬件隔离的软件测试
 ```
 
-运行 `python -m unittest discover -s tests -v`。52 项 Python 测试覆盖 RP2040 采集协议、导出、UF2 校验，以及 CH347 的模式、版本、目标配置、文件完整性、计划确认与去重、子进程失败/取消、鉴权/Origin/Host、XVC 向量分包与 TCP 协议。测试使用受控模拟硬件，不能替代真机验收。
+运行 `python -m unittest discover -s tests -v`。57 项 Python 测试覆盖 RP2040 采集协议、导出、UF2 校验，以及 CH347 的模式、版本、目标配置、文件完整性、计划确认与去重、子进程失败/取消、鉴权/Origin/Host、XVC 向量分包与 TCP 协议。测试使用受控模拟硬件，不能替代真机验收。
 
 运行 `node --test tests/test_waveform.js` 可执行 4 项波形视图回归测试（测试需要 Node.js）。前端已通过浏览器检查缩放按钮、滚轮缩放、滑杆和波形拖动、游标保留，以及导航、计划生成、演示执行与记录；SHA-256 fallback 使用 4 个标准实现对照向量校验。eve 类型检查与生产构建通过，模型调用未测试。
 
@@ -172,3 +172,9 @@ python package_release.py dist/CH347_Debug_Studio.zip
 ```
 
 这会生成网页“连接设置”中可下载的完整启动包；Git 仓库不重复提交这个生成文件。`dist/firmware/` 已包含三份专用 UF2、版本校验清单和完整对应源码包，克隆后即可使用。
+
+## 工具汇总与硬件可视化
+
+左侧「工具汇总」可下载两块板的原始 KiCad 9 工程，并在线查看原理图、PCB 正反面及可旋转的 3D 装配模型。板卡图片与 3D 均保留原始管脚丝印；各功能页显示实际 J2 脚号、板上丝印和当前功能，随 ADC、GPIO、UART 与总线选择更新。详见 [硬件资料与重建说明](docs/HARDWARE.md)。
+
+验证：`python -m unittest discover -s tests -v`（57 项），`node --test tests/test_waveform.js tests/test_hardware.js`（8 项）。硬件资料校验包括原文件哈希、正反面焊盘、丝印对应、引脚映射与本地静态资源类型。

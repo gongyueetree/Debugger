@@ -9,7 +9,7 @@ class Handler(BaseHTTPRequestHandler):
  server_version='DebugStudio/0.2'
  def log_message(self,*args):pass
  def send(self,data,status=200,kind='application/json'):
-  raw=json.dumps(data,ensure_ascii=False).encode() if kind=='application/json' else data
+  raw=data if isinstance(data,bytes) else json.dumps(data,ensure_ascii=False).encode() if kind=='application/json' else data
   self.send_response(status);self.send_header('Content-Type',kind);self.send_header('Content-Length',str(len(raw)));self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff')
   origin=self.headers.get('Origin')
   if origin in self.server.origins:
@@ -39,7 +39,7 @@ class Handler(BaseHTTPRequestHandler):
    rel='index.html' if path=='/' else path.lstrip('/')
    file=(BASE/'dist'/rel).resolve()
    if not file.is_relative_to((BASE/'dist').resolve()) or not file.is_file():return self.send({'error':'Not found'},404)
-   mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.zip':'application/zip','.json':'application/json'}.get(file.suffix,'application/octet-stream')
+   mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.glb':'model/gltf-binary','.zip':'application/zip','.json':'application/json'}.get(file.suffix,'application/octet-stream')
    return self.send(file.read_bytes(),kind=mime)
   except UserError as e:return self.send({'error':str(e)},403)
   except Exception as e:return self.send({'error':str(e)},500)

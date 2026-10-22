@@ -4,8 +4,8 @@ from pathlib import Path
 root=Path(__file__).resolve().parent
 parser=argparse.ArgumentParser();parser.add_argument('output');args=parser.parse_args();out=Path(args.output).resolve();out.parent.mkdir(parents=True,exist_ok=True)
 files=[root/x for x in ['README.md','requirements.txt','start.sh','start-windows.bat','package_release.py','.gitignore']]
-for folder in ['bridge','tests','docs','dist','firmware']:
- files += [p for p in (root/folder).rglob('*') if p.is_file() and (p.suffix in ['.py','.md','.html','.css','.js','.json','.uf2','.gz','.c','.txt','.patch'] or p.name=='LICENSE') and '__pycache__' not in p.parts]
+for folder in ['bridge','tests','docs','dist','firmware','scripts']:
+ files += [p for p in (root/folder).rglob('*') if p.is_file() and (p.suffix in ['.py','.md','.html','.css','.js','.json','.uf2','.gz','.c','.txt','.patch','.svg','.png','.glb','.zip','.kicad_pcb','.kicad_sch','.kicad_pro'] or p.name=='LICENSE') and '__pycache__' not in p.parts and 'node_modules' not in p.parts and p.name != 'CH347_Debug_Studio.zip']
 for folder in ['agent','lib']:
  files += [p for p in (root/'agent-runtime'/folder).rglob('*') if p.is_file()]
 files += [root/'agent-runtime'/x for x in ['package.json','package-lock.json','tsconfig.json','ask.mjs','AGENTS.md']]

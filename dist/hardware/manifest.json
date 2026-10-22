@@ -1,0 +1,59 @@
+{
+  "source": "User-supplied CH347_Debug.zip and LA_RP2040.zip",
+  "exporter": "KiCad 9.0.9",
+  "format": "KiCad 9",
+  "units": "mm",
+  "models": "Official KiCad kicad-packages3D 9.0.0; see model-sources.json and KICAD-MODELS-LICENSE.md",
+  "images": {
+    "board-top.png": "KiCad top view, original PCB geometry",
+    "board-render.png": "KiCad assembly render with standard library component models; fitted options may differ",
+    "product-hero.png": "Unused AI concept illustration, retained only as an optional generated asset. All UI board images use the exact CAD renders with original silkscreen."
+  },
+  "boards": {
+    "ch347": {
+      "width": 35.0,
+      "height": 16.5,
+      "thickness": 1.6,
+      "source_files": {
+        "CH347_SPI.kicad_pcb": "76f880d96d8354963344e40e05775798019805eaabc56a516cb4daa4807af921",
+        "CH347_SPI.kicad_pro": "1eb7da0919f0a5d8a6e3b0914464509ea992f4372b530aa43317a942b4d04c99",
+        "CH347_SPI.kicad_sch": "48558e847c5c4d8dc50500dfa9b15010d0f1f433e4be476df862355f80aef321"
+      },
+      "assets": {
+        "CH347_Debug.zip": "8fdd0729d2d9d5948620bbdd1909c81524874cb5c60142b5385a00a5ce6508b9",
+        "board-render.png": "638e3f401a09cbed67fff18d724c1ccbba4bbf9c08aa21b7ba847662cd7a1e03",
+        "board-top.png": "1cf9b8f625d51adfba292c44ce20ba79a96773413cb0d4c073e7e4f7e2ae1c25",
+        "board.glb": "10dd7d9606509fc93e75cb864c7d6a722abe8fcb6f4654040d122e53524a1131",
+        "geometry.json": "117ccc212c93fadf34b0d9d98f41356ede84e2715c165058535ada34da19204f",
+        "pcb-back.svg": "21f0d1b9a47c3637874adc0f6502762b7e48c051f94a46263d7140c0f9607e6b",
+        "pcb-front.svg": "6ddf7e14ba9c7f6e4758e74ddcc450936cc74c4a5b93993fabdeeb40b7eae874",
+        "schematic/CH347_SPI.svg": "230d54b9794bb566c957266455a81057701d369f900487ea03d585aad01becbb"
+      },
+      "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
+      "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."
+    },
+    "rp2040": {
+      "width": 35.0,
+      "height": 16.5,
+      "thickness": 1.6,
+      "source_files": {
+        "LA_rp2040.kicad_pcb": "c35732231607a3e55649da23b125c08596caf0cc0db8bba5a81b25a0f65df603",
+        "LA_rp2040.kicad_pro": "ed319b3419308d8921927dc64a3fa8d1d6cd9796a095fc1c4a4ef1514fde40ee",
+        "LA_rp2040.kicad_sch": "0de25a6f3cdb25597b61baad8976059e14bb55cd2fc0c19cf491bddda0b64890"
+      },
+      "assets": {
+        "LA_RP2040.zip": "a8c2e3f017c07b108e758bd9fcc9a16a3cd0ba3ad906f26b7752e368b266b8a4",
+        "board-render.png": "47e39a7c9d8936cdb6588be91e4ca72a41f87cf2b53e1864ead7f16c5ef101c1",
+        "board-top.png": "e95ea444a218a654a28c369cc1cc8e4afc906227e46b814184eda2c8b20a9777",
+        "board.glb": "cf4503ba984fa807bbd0cd2270f941b07a8c260c7a11086f0e7baba32652c7ed",
+        "geometry.json": "356477d4ec2277366b06ddb40739486076b71a024214f21a5411c7e169c12b6a",
+        "pcb-back.svg": "55b86cacc6c7423e33c9d6e81b737827c7f3348636f2e9c019faa2879ebfa4c4",
+        "pcb-front.svg": "2a2d4dcc3534e7e72752caf96c0e07de5bb15fbbdde6bf3dcf4a91732045bb91",
+        "schematic/LA_rp2040.svg": "619108f345e9ead2cd096f09734964984c0a46527dc83eb66dccdc0870025fd0"
+      },
+      "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
+      "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."
+    }
+  },
+  "glb_pipeline": "KiCad 9.0.9 embedded VRML → scripts/vrml_to_glb.py; retains source silkscreen, component geometry and library material colors"
+}

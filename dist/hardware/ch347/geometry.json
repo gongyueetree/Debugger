@@ -1,0 +1,2080 @@
+{
+  "silkscreen": [
+    {
+      "text": "TMS",
+      "at": [
+        127.254,
+        111.683705,
+        0.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "TCK",
+      "at": [
+        127.378271,
+        109.143705,
+        0.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "TDI",
+      "at": [
+        127.813609,
+        106.603705,
+        0.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "CH347T Debugger",
+      "at": [
+        126.111,
+        115.856943,
+        90.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "TDO",
+      "at": [
+        127.254,
+        104.063705,
+        0.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "TRST",
+      "at": [
+        126.694391,
+        114.223705,
+        0.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "GND",
+      "at": [
+        127.129729,
+        116.763705,
+        0.0
+      ],
+      "layer": "F.SilkS"
+    },
+    {
+      "text": "SCL",
+      "at": [
+        129.667,
+        114.173,
+        0.0
+      ],
+      "layer": "B.SilkS"
+    },
+    {
+      "text": "RXD",
+      "at": [
+        129.667,
+        109.093,
+        0.0
+      ],
+      "layer": "B.SilkS"
+    },
+    {
+      "text": "CTS",
+      "at": [
+        129.667,
+        106.553,
+        0.0
+      ],
+      "layer": "B.SilkS"
+    },
+    {
+      "text": "SDA",
+      "at": [
+        129.667,
+        116.713,
+        0.0
+      ],
+      "layer": "B.SilkS"
+    },
+    {
+      "text": "TXD\n",
+      "at": [
+        129.667,
+        111.633,
+        0.0
+      ],
+      "layer": "B.SilkS"
+    },
+    {
+      "text": "3.3V",
+      "at": [
+        129.667,
+        104.013,
+        0.0
+      ],
+      "layer": "B.SilkS"
+    }
+  ],
+  "bounds": {
+    "minX": 100.0,
+    "minY": 101.75,
+    "maxX": 135.0,
+    "maxY": 118.25
+  },
+  "thickness": 1.6,
+  "components": [
+    {
+      "ref": "R1",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 109.474,
+      "y": 107.696,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(J1-CC1)",
+          "x": 108.649,
+          "y": 107.696,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 110.299,
+          "y": 107.696,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R8",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 117.349,
+      "y": 103.886,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U2-RTS1{slash}GPIO7)",
+          "x": 116.524,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 118.174,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "C1",
+      "value": "0.1uF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 107.302,
+      "y": 103.886,
+      "angle": 180.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U1-EN)",
+          "x": 108.077,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 106.527,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "U2",
+      "value": "CH347T",
+      "footprint": "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm",
+      "x": 119.6625,
+      "y": 110.0,
+      "angle": 180.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U2-~{RST})",
+          "x": 122.525,
+          "y": 112.925,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "2",
+          "net": "/CTS",
+          "x": 122.525,
+          "y": 112.275,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "3",
+          "net": "/TXD",
+          "x": 122.525,
+          "y": 111.625,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "4",
+          "net": "/RXD",
+          "x": 122.525,
+          "y": 110.975,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "5",
+          "net": "/CS{slash}TMS",
+          "x": 122.525,
+          "y": 110.325,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "6",
+          "net": "/SCK{slash}TCK",
+          "x": 122.525,
+          "y": 109.675,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "7",
+          "net": "/MISO{slash}TDO",
+          "x": 122.525,
+          "y": 109.025,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "8",
+          "net": "/MOSI{slash}TDI",
+          "x": 122.525,
+          "y": 108.375,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "9",
+          "net": "/TRST",
+          "x": 122.525,
+          "y": 107.725,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "10",
+          "net": "Net-(U2-DTR1{slash}TNOW1)",
+          "x": 122.525,
+          "y": 107.075,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "11",
+          "net": "/SCL",
+          "x": 116.8,
+          "y": 107.075,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "12",
+          "net": "/SDA",
+          "x": 116.8,
+          "y": 107.725,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "13",
+          "net": "Net-(U2-RTS1{slash}GPIO7)",
+          "x": 116.8,
+          "y": 108.375,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "14",
+          "net": "+3V3",
+          "x": 116.8,
+          "y": 109.025,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "15",
+          "net": "Net-(D1-K)",
+          "x": 116.8,
+          "y": 109.675,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "16",
+          "net": "/UD-",
+          "x": 116.8,
+          "y": 110.325,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "17",
+          "net": "/UD+",
+          "x": 116.8,
+          "y": 110.975,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "18",
+          "net": "GND",
+          "x": 116.8,
+          "y": 111.625,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "19",
+          "net": "Net-(U2-XI)",
+          "x": 116.8,
+          "y": 112.275,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        },
+        {
+          "number": "20",
+          "net": "Net-(U2-XO)",
+          "x": 116.8,
+          "y": 112.925,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.475,
+            0.4
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "Y1",
+      "value": "8MHz",
+      "footprint": "Crystal:Crystal_SMD_Abracon_ABM8G-4Pin_3.2x2.5mm",
+      "x": 111.506,
+      "y": 115.583,
+      "angle": 90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U2-XO)",
+          "x": 112.356,
+          "y": 116.683,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.4,
+            1.2
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 112.356,
+          "y": 114.483,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.4,
+            1.2
+          ]
+        },
+        {
+          "number": "3",
+          "net": "Net-(U2-XI)",
+          "x": 110.656,
+          "y": 114.483,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.4,
+            1.2
+          ]
+        },
+        {
+          "number": "4",
+          "net": "GND",
+          "x": 110.656,
+          "y": 116.683,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.4,
+            1.2
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "D2",
+      "value": "PWR",
+      "footprint": "LED_SMD:LED_0603_1608Metric",
+      "x": 112.395,
+      "y": 108.458,
+      "angle": 90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(D2-K)",
+          "x": 112.395,
+          "y": 109.2455,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.875,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "+3V3",
+          "x": 112.395,
+          "y": 107.6705,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.875,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R9",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 122.047,
+      "y": 103.886,
+      "angle": 180.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U2-DTR1{slash}TNOW1)",
+          "x": 122.872,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 121.222,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "C5",
+      "value": "22pF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 114.173,
+      "y": 115.837,
+      "angle": -90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "GND",
+          "x": 114.173,
+          "y": 115.062,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "Net-(U2-XO)",
+          "x": 114.173,
+          "y": 116.612,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "D1",
+      "value": "USB",
+      "footprint": "LED_SMD:LED_0603_1608Metric",
+      "x": 112.395,
+      "y": 111.6585,
+      "angle": -90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(D1-K)",
+          "x": 112.395,
+          "y": 110.871,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.875,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "Net-(D1-A)",
+          "x": 112.395,
+          "y": 112.446,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.875,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R5",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 117.349,
+      "y": 105.664,
+      "angle": 180.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "+3V3",
+          "x": 118.174,
+          "y": 105.664,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "Net-(U2-RTS1{slash}GPIO7)",
+          "x": 116.524,
+          "y": 105.664,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "U1",
+      "value": "MIC5504-3.3YM5",
+      "footprint": "Package_TO_SOT_SMD:SOT-23-5",
+      "x": 110.998,
+      "y": 104.836,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U1-EN)",
+          "x": 109.8605,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.325,
+            0.6
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 109.8605,
+          "y": 104.836,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.325,
+            0.6
+          ]
+        },
+        {
+          "number": "3",
+          "net": "Net-(U1-EN)",
+          "x": 109.8605,
+          "y": 105.786,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.325,
+            0.6
+          ]
+        },
+        {
+          "number": "4",
+          "net": "unconnected-(U1-NC-Pad4)",
+          "x": 112.1355,
+          "y": 105.786,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.325,
+            0.6
+          ]
+        },
+        {
+          "number": "5",
+          "net": "+3V3",
+          "x": 112.1355,
+          "y": 103.886,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            1.325,
+            0.6
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R3",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 109.474,
+      "y": 112.395,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(J1-CC2)",
+          "x": 108.649,
+          "y": 112.395,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 110.299,
+          "y": 112.395,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R2",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 117.602,
+      "y": 115.062,
+      "angle": 180.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(U2-~{RST})",
+          "x": 118.427,
+          "y": 115.062,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "+3V3",
+          "x": 116.777,
+          "y": 115.062,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "C3",
+      "value": "0.1uF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 121.666,
+      "y": 115.062,
+      "angle": 180.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "GND",
+          "x": 122.441,
+          "y": 115.062,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "Net-(U2-~{RST})",
+          "x": 120.891,
+          "y": 115.062,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "C4",
+      "value": "22pF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 108.839,
+      "y": 115.837,
+      "angle": 90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "GND",
+          "x": 108.839,
+          "y": 116.612,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "Net-(U2-XI)",
+          "x": 108.839,
+          "y": 115.062,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R7",
+      "value": "1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 114.173,
+      "y": 108.478,
+      "angle": 90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(D2-K)",
+          "x": 114.173,
+          "y": 109.303,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 114.173,
+          "y": 107.653,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R6",
+      "value": "1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 114.173,
+      "y": 111.633,
+      "angle": 90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "Net-(D1-A)",
+          "x": 114.173,
+          "y": 112.458,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "+3V3",
+          "x": 114.173,
+          "y": 110.808,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "C2",
+      "value": "0.1uF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 114.173,
+      "y": 104.775,
+      "angle": -90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "+3V3",
+          "x": 114.173,
+          "y": 104.0,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "GND",
+          "x": 114.173,
+          "y": 105.55,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.9,
+            0.95
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "J2",
+      "value": "DEBUG",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Horizontal_SMD",
+      "x": 130.232,
+      "y": 110.0,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "/MISO{slash}TDO",
+          "x": 132.207,
+          "y": 103.65,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "2",
+          "net": "+3V3",
+          "x": 132.207,
+          "y": 103.65,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "3",
+          "net": "/MOSI{slash}TDI",
+          "x": 132.207,
+          "y": 106.19,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "4",
+          "net": "/CTS",
+          "x": 132.207,
+          "y": 106.19,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "5",
+          "net": "/SCK{slash}TCK",
+          "x": 132.207,
+          "y": 108.73,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "6",
+          "net": "/RXD",
+          "x": 132.207,
+          "y": 108.73,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "7",
+          "net": "/CS{slash}TMS",
+          "x": 132.207,
+          "y": 111.27,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "8",
+          "net": "/TXD",
+          "x": 132.207,
+          "y": 111.27,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "9",
+          "net": "/TRST",
+          "x": 132.207,
+          "y": 113.81,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "10",
+          "net": "/SCL",
+          "x": 132.207,
+          "y": 113.81,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "11",
+          "net": "GND",
+          "x": 132.207,
+          "y": 116.35,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "12",
+          "net": "/SDA",
+          "x": 132.207,
+          "y": 116.35,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "J1",
+      "value": "USB_C",
+      "footprint": "Connector_USB:USB_C_Receptacle_Palconn_UTC16-G",
+      "x": 104.24,
+      "y": 110.0,
+      "angle": -90.0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "",
+          "net": "",
+          "x": 105.69,
+          "y": 107.11,
+          "shape": "circle",
+          "layers": [
+            "*.Cu",
+            "*.Mask"
+          ],
+          "size": [
+            0.6,
+            0.6
+          ]
+        },
+        {
+          "number": "",
+          "net": "",
+          "x": 105.69,
+          "y": 112.89,
+          "shape": "circle",
+          "layers": [
+            "*.Cu",
+            "*.Mask"
+          ],
+          "size": [
+            0.6,
+            0.6
+          ]
+        },
+        {
+          "number": "A1",
+          "net": "GND",
+          "x": 106.75,
+          "y": 106.8,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "A4",
+          "net": "Net-(U1-EN)",
+          "x": 106.75,
+          "y": 107.6,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "A5",
+          "net": "Net-(J1-CC1)",
+          "x": 106.75,
+          "y": 108.75,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "A6",
+          "net": "/UD+",
+          "x": 106.75,
+          "y": 109.75,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "A7",
+          "net": "/UD-",
+          "x": 106.75,
+          "y": 110.25,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "A8",
+          "net": "unconnected-(J1-SBU1-PadA8)",
+          "x": 106.75,
+          "y": 111.25,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "A9",
+          "net": "Net-(U1-EN)",
+          "x": 106.75,
+          "y": 112.4,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "A12",
+          "net": "GND",
+          "x": 106.75,
+          "y": 113.2,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "B1",
+          "net": "GND",
+          "x": 106.75,
+          "y": 113.2,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "B4",
+          "net": "Net-(U1-EN)",
+          "x": 106.75,
+          "y": 112.4,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "B5",
+          "net": "Net-(J1-CC2)",
+          "x": 106.75,
+          "y": 111.75,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "B6",
+          "net": "/UD+",
+          "x": 106.75,
+          "y": 110.75,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "B7",
+          "net": "/UD-",
+          "x": 106.75,
+          "y": 109.25,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "B8",
+          "net": "unconnected-(J1-SBU2-PadB8)",
+          "x": 106.75,
+          "y": 108.25,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.3,
+            1.16
+          ]
+        },
+        {
+          "number": "B9",
+          "net": "Net-(U1-EN)",
+          "x": 106.75,
+          "y": 107.6,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "B12",
+          "net": "GND",
+          "x": 106.75,
+          "y": 106.8,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.6,
+            1.16
+          ]
+        },
+        {
+          "number": "S1",
+          "net": "GND",
+          "x": 106.17,
+          "y": 105.68,
+          "shape": "oval",
+          "layers": [
+            "*.Cu",
+            "*.Mask"
+          ],
+          "size": [
+            2.0,
+            0.9
+          ]
+        },
+        {
+          "number": "S1",
+          "net": "GND",
+          "x": 102.0,
+          "y": 105.68,
+          "shape": "oval",
+          "layers": [
+            "*.Cu",
+            "*.Mask"
+          ],
+          "size": [
+            1.7,
+            0.9
+          ]
+        },
+        {
+          "number": "S1",
+          "net": "GND",
+          "x": 106.17,
+          "y": 114.32,
+          "shape": "oval",
+          "layers": [
+            "*.Cu",
+            "*.Mask"
+          ],
+          "size": [
+            2.0,
+            0.9
+          ]
+        },
+        {
+          "number": "S1",
+          "net": "GND",
+          "x": 102.0,
+          "y": 114.32,
+          "shape": "oval",
+          "layers": [
+            "*.Cu",
+            "*.Mask"
+          ],
+          "size": [
+            1.7,
+            0.9
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "R4",
+      "value": "5.1k",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "x": 122.047,
+      "y": 105.664,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "+3V3",
+          "x": 121.222,
+          "y": 105.664,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        },
+        {
+          "number": "2",
+          "net": "Net-(U2-DTR1{slash}TNOW1)",
+          "x": 122.872,
+          "y": 105.664,
+          "shape": "roundrect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            0.8,
+            0.95
+          ]
+        }
+      ]
+    }
+  ],
+  "connectors": [
+    {
+      "ref": "J2",
+      "value": "DEBUG",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Horizontal_SMD",
+      "x": 130.232,
+      "y": 110.0,
+      "angle": 0,
+      "side": "F.Cu",
+      "pads": [
+        {
+          "number": "1",
+          "net": "/MISO{slash}TDO",
+          "x": 132.207,
+          "y": 103.65,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "2",
+          "net": "+3V3",
+          "x": 132.207,
+          "y": 103.65,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "3",
+          "net": "/MOSI{slash}TDI",
+          "x": 132.207,
+          "y": 106.19,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "4",
+          "net": "/CTS",
+          "x": 132.207,
+          "y": 106.19,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "5",
+          "net": "/SCK{slash}TCK",
+          "x": 132.207,
+          "y": 108.73,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "6",
+          "net": "/RXD",
+          "x": 132.207,
+          "y": 108.73,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "7",
+          "net": "/CS{slash}TMS",
+          "x": 132.207,
+          "y": 111.27,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "8",
+          "net": "/TXD",
+          "x": 132.207,
+          "y": 111.27,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "9",
+          "net": "/TRST",
+          "x": 132.207,
+          "y": 113.81,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "10",
+          "net": "/SCL",
+          "x": 132.207,
+          "y": 113.81,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "11",
+          "net": "GND",
+          "x": 132.207,
+          "y": 116.35,
+          "shape": "rect",
+          "layers": [
+            "F.Cu",
+            "F.Mask",
+            "F.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        },
+        {
+          "number": "12",
+          "net": "/SDA",
+          "x": 132.207,
+          "y": 116.35,
+          "shape": "rect",
+          "layers": [
+            "B.Cu",
+            "B.Mask",
+            "B.Paste"
+          ],
+          "size": [
+            4.0,
+            1.0
+          ]
+        }
+      ]
+    }
+  ]
+}

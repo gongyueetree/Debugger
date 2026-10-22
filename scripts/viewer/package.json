@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "esbuild": "0.25.10",
+    "three": "0.180.0"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild board3d.js --bundle --format=esm --minify --outfile=../../dist/vendor/board3d.js"
+  }
+}
