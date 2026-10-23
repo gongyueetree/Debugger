@@ -5,6 +5,11 @@ from hardware_source import board_data
 from vrml_to_glb import convert
 ROOT=Path(__file__).resolve().parents[1];BASE=ROOT/'dist/hardware'
 
+def crop_svg(path,bounds):
+ import re
+ x,y=bounds['minX']-1,bounds['minY']-1;w,h=bounds['maxX']-x+1,bounds['maxY']-y+1
+ s=path.read_text();s=re.sub(r'width="[^"]+" height="[^"]+" viewBox="[^"]+"',f'width="{w}mm" height="{h}mm" viewBox="{x} {y} {w} {h}"',s,count=1);path.write_text(s)
+
 def main():
  p=argparse.ArgumentParser();p.add_argument('--kicad-cli',default='kicad-cli');p.add_argument('--models-dir',type=Path,help='Official KiCad 9 packages3D folder');p.add_argument('--manifest-only',action='store_true');a=p.parse_args()
  env=os.environ.copy()
@@ -15,8 +20,11 @@ def main():
   d=BASE/key;pcb=d/'source'/f'{name}.kicad_pcb';sch=d/'source'/f'{name}.kicad_sch'
   if not a.manifest_only:
    (d/'geometry.json').write_text(json.dumps(board_data(pcb),ensure_ascii=False,indent=2)+'\n')
-   run('sch','export','svg','--exclude-drawing-sheet','-o',d/'schematic',sch)
+   run('sch','export','svg','-o',d/'schematic',sch)
    for face,layers in [('front','F.Cu,F.Silkscreen,Edge.Cuts'),('back','B.Cu,B.Silkscreen,Edge.Cuts')]:run('pcb','export','svg','--mode-single','--layers',layers,'--fit-page-to-board','--exclude-drawing-sheet','-o',d/f'pcb-{face}.svg',pcb)
+   for face,layer in [('front','F.Silkscreen'),('back','B.Silkscreen')]:
+    target=d/f'pcb-silk-{face}.svg';run('pcb','export','svg','--mode-single','--layers',layer,'--page-size-mode','1','--exclude-drawing-sheet','-o',target,pcb)
+    crop_svg(target,board_data(pcb)['bounds'])
    with tempfile.TemporaryDirectory() as tmp:
     wrl=Path(tmp)/'board.wrl';run('pcb','export','vrml','--units','m','--user-origin','0x0mm','--force','-o',wrl,pcb);convert(wrl,d/'board.glb')
    for image,args in [('board-top.png',[]),('board-render.png',['--rotate','325,0,25','--perspective'])]:run('pcb','render','--width','1600','--height','900','--quality','high','--zoom','1.1','--background','transparent',*args,'-o',d/image,pcb)

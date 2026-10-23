@@ -1,12 +1,12 @@
 # 硬件工程、可视化与引脚
 
-工作台和左侧「工具汇总」均提供 CH347 Debugger 与 LA RP2040 的原始 KiCad 9 工程、可缩放原理图、PCB 正反面与交互式 3D 装配视图。启动本地 Agent 后也可离线查看，无需 CDN 或在线模型服务。
+工作台和左侧「工具汇总」均提供 CH347 Debugger 与 LA RP2040 的原始 KiCad 9 工程、带图纸外框和标题栏的可缩放原理图、PCB 双层叠加 / 正反面与交互式 3D 装配视图。启动本地 Agent 后也可离线查看，无需 CDN 或在线模型服务。
 
 ## 文件与来源
 
 `dist/hardware/ch347/source/` 和 `dist/hardware/rp2040/source/` 保存用户提供 ZIP 内的 `.kicad_pcb`、`.kicad_sch`、`.kicad_pro`，文件内容未修改。每块板的工程 ZIP 仅打包这三个源文件，不包含工作站缓存。`manifest.json` 记录源文件和派生资源 SHA-256。
 
-原理图和 PCB 预览由 KiCad 9.0.9 导出 SVG。PCB 背层 SVG 原文件为顶视透视图，网页镜像 X 轴后呈现翻板视角。GLB 来自同一 PCB 的 KiCad VRML 导出，再由 `scripts/vrml_to_glb.py` 转换，保留器件模型、颜色及原始正反面丝印。KiCad 标准器件模型来源、文件哈希及许可位于 `model-sources.json` 和 `KICAD-MODELS-LICENSE.md`。模型用于装配示意；器件选装状态以实际焊接为准。
+原理图与丝印由 KiCad 9.0.9 导出 SVG，保留图纸外框及标题栏。交互式 PCB 2D 从原始工程解析实际走线、圆弧、过孔、焊盘和已填充铜区；默认从正面俯视同时显示红色 F.Cu 与蓝色 B.Cu。可切换单面；背面镜像 X 轴呈现翻板视角。叠加模式默认显示正面丝印以避免文字重叠，背面模式显示背面丝印，可关闭。点击铜线、焊盘、过孔或铜区会高亮同一网络并显示工程中的网络名、层与器件管脚；重叠网络提供候选按钮，也可由下拉框直接选择。Esc 或「清除高亮」取消选择；拖动与滚轮继续平移 / 缩放。「下载当前 PCB SVG」保留当前面、丝印与网络高亮。GLB 来自同一 PCB 的 KiCad VRML 导出，再由 `scripts/vrml_to_glb.py` 转换，保留器件模型、颜色及原始正反面丝印。KiCad 标准器件模型来源、文件哈希及许可位于 `model-sources.json` 和 `KICAD-MODELS-LICENSE.md`。模型用于装配示意；器件选装状态以实际焊接为准。
 
 工作台、工具卡片与接线页面均使用 KiCad 精确 CAD 渲染。另存的 `product-hero.png` 是 AI 概念展示图，未在界面使用，不能作为接线、丝印或生产参考。
 
@@ -50,7 +50,7 @@ npm run build
 
 ```bash
 python -m unittest discover -s tests -v
-node --test tests/test_waveform.js tests/test_hardware.js
+node --test tests/test_waveform.js tests/test_hardware.js tests/test_pcb_viewer.js
 ```
 
 参考：

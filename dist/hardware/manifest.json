@@ -24,10 +24,12 @@
         "board-render.png": "638e3f401a09cbed67fff18d724c1ccbba4bbf9c08aa21b7ba847662cd7a1e03",
         "board-top.png": "1cf9b8f625d51adfba292c44ce20ba79a96773413cb0d4c073e7e4f7e2ae1c25",
         "board.glb": "10dd7d9606509fc93e75cb864c7d6a722abe8fcb6f4654040d122e53524a1131",
-        "geometry.json": "117ccc212c93fadf34b0d9d98f41356ede84e2715c165058535ada34da19204f",
+        "geometry.json": "bd2086da08a1aa9881bd4096771fe569e6391fc5e01de68fe080fa0208b613fc",
         "pcb-back.svg": "21f0d1b9a47c3637874adc0f6502762b7e48c051f94a46263d7140c0f9607e6b",
         "pcb-front.svg": "6ddf7e14ba9c7f6e4758e74ddcc450936cc74c4a5b93993fabdeeb40b7eae874",
-        "schematic/CH347_SPI.svg": "230d54b9794bb566c957266455a81057701d369f900487ea03d585aad01becbb"
+        "pcb-silk-back.svg": "07dde48fb73d0a690720ab6f488ecfdc71af3791be9b8f6dc677ac31dd810c74",
+        "pcb-silk-front.svg": "2a7f8423f1d7555f93d9c8328ad9ae23f2eaf086a7313914fa0557db203ccbb6",
+        "schematic/CH347_SPI.svg": "549366a6b74caa53211eaa60edb512b437a7bb9059b8c9187851de852502c541"
       },
       "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
       "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."
@@ -46,10 +48,12 @@
         "board-render.png": "47e39a7c9d8936cdb6588be91e4ca72a41f87cf2b53e1864ead7f16c5ef101c1",
         "board-top.png": "e95ea444a218a654a28c369cc1cc8e4afc906227e46b814184eda2c8b20a9777",
         "board.glb": "cf4503ba984fa807bbd0cd2270f941b07a8c260c7a11086f0e7baba32652c7ed",
-        "geometry.json": "356477d4ec2277366b06ddb40739486076b71a024214f21a5411c7e169c12b6a",
+        "geometry.json": "2e78c3472d9c82977cfc88b2782365f13013a0897b650ed3fb9d1269e1c426ae",
         "pcb-back.svg": "55b86cacc6c7423e33c9d6e81b737827c7f3348636f2e9c019faa2879ebfa4c4",
         "pcb-front.svg": "2a2d4dcc3534e7e72752caf96c0e07de5bb15fbbdde6bf3dcf4a91732045bb91",
-        "schematic/LA_rp2040.svg": "619108f345e9ead2cd096f09734964984c0a46527dc83eb66dccdc0870025fd0"
+        "pcb-silk-back.svg": "f7bc0ef9ac39395353194606debea6d3a64f0810aa75fd3cc2ae2e326503ee08",
+        "pcb-silk-front.svg": "27e3ff172b8eef6e997e01db221674be27e803ef5dd20de9c0431e77ae27e5fa",
+        "schematic/LA_rp2040.svg": "6f48beff58a5dfa2c483215a655a39097e0dc3e01b60e33ca0d51b9a802d540c"
       },
       "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
       "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."

@@ -175,6 +175,6 @@ python package_release.py dist/CH347_Debug_Studio.zip
 
 ## 工具汇总与硬件可视化
 
-左侧「工具汇总」可下载两块板的原始 KiCad 9 工程，并在线查看原理图、PCB 正反面及可旋转的 3D 装配模型。板卡图片与 3D 均保留原始管脚丝印；各功能页显示实际 J2 脚号、板上丝印和当前功能，随 ADC、GPIO、UART 与总线选择更新。详见 [硬件资料与重建说明](docs/HARDWARE.md)。
+左侧「工具汇总」可下载两块板的原始 KiCad 9 工程，并在线查看带图纸外框和标题栏的原理图、PCB 双层叠加 / 正反面及可旋转的 3D 装配模型。PCB 可点击走线、焊盘或过孔，高亮整个网络并显示名称和连接的管脚。板卡图片与 3D 均保留原始管脚丝印；各功能页显示实际 J2 脚号、板上丝印和当前功能，随 ADC、GPIO、UART 与总线选择更新。详见 [硬件资料与重建说明](docs/HARDWARE.md)。
 
-验证：`python -m unittest discover -s tests -v`（57 项），`node --test tests/test_waveform.js tests/test_hardware.js`（8 项）。硬件资料校验包括原文件哈希、正反面焊盘、丝印对应、引脚映射与本地静态资源类型。
+验证：`python -m unittest discover -s tests -v`（57 项），`node --test tests/test_waveform.js tests/test_hardware.js tests/test_pcb_viewer.js`（13 项）。硬件资料校验包括原文件哈希、正反面焊盘、丝印对应、引脚映射与本地静态资源类型。
