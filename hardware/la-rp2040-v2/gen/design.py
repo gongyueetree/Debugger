@@ -289,7 +289,7 @@ comp('H2', 'Mechanical:MountingHole', 'M2', 'MountingHole:MountingHole_2.2mm_M2'
 PWR_FLAGS = {'GND': (337.82, 233.68), '+5V': (347.98, 233.68), 'VIO': (358.14, 233.68), 'VBUS': (368.3, 233.68),
              'ADC_AVDD': (378.46, 233.68)}
 
-# routing classes: net → track width (mm).  GND and +3V3 are inner planes.
+# routing classes: net → track width (mm).  GND is the In1 plane.
 PLANES = {'GND': 'In1.Cu', '+3V3': 'In2.Cu'}
 WIDTHS = {'VBUS': 0.4, '+5V': 0.4, '5V_F': 0.4, '5V_OUT': 0.4, 'GND': 0.25, '+3V3': 0.25, '+1V1': 0.25,
           'VIO': 0.3, 'VIO_F': 0.3, 'VIO_INT': 0.3, 'ADC_AVDD': 0.2}

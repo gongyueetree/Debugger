@@ -189,6 +189,8 @@ def main():
     if os.environ.get('STANDIN_STL'):          # preview meshes for the renderer, not deliverables
         cq.exporters.export(pcb, os.path.join(OUT, '_pcb.stl'), tolerance=0.02, angularTolerance=0.3)
         cq.exporters.export(parts, os.path.join(OUT, '_parts.stl'), tolerance=0.02, angularTolerance=0.3)
+    if not os.environ.get('ENCLOSURE_FULL'):
+        return                              # ENCLOSURE_FULL=1 also writes the assembly STEP and SVG views
     asm = cq.Assembly(name='LA_RP2040_V2_enclosure')
     asm.add(tray, name='tray', color=cq.Color(0.15, 0.17, 0.2))
     asm.add(lid, name='lid', color=cq.Color(0.15, 0.17, 0.2))

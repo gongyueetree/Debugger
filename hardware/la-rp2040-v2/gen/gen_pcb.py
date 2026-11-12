@@ -186,7 +186,7 @@ def text(board, s, x, y, layer, size=0.8, rot=0, thick=None, justify=None):
     return t
 
 
-def zone(board, netinfo, layer, name, clearance=0.2, thermal=True, priority=0, inset=0.0):
+def zone(board, netinfo, layer, name, clearance=0.15, thermal=True, priority=0, inset=0.0):
     z = pcbnew.ZONE(board)
     z.SetLayer(layer)
     z.SetNet(netinfo)
@@ -197,7 +197,7 @@ def zone(board, netinfo, layer, name, clearance=0.2, thermal=True, priority=0, i
     for x, y in ((inset, inset), (D.BOARD_L - inset, inset), (D.BOARD_L - inset, D.BOARD_W - inset), (inset, D.BOARD_W - inset)):
         o.Append(MM(OX + x), MM(OY + y))
     z.SetLocalClearance(MM(clearance))
-    z.SetMinThickness(MM(0.2))
+    z.SetMinThickness(MM(0.15))
     z.SetThermalReliefGap(MM(0.2))
     z.SetThermalReliefSpokeWidth(MM(0.3))
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL if thermal else pcbnew.ZONE_CONNECTION_FULL)
@@ -242,13 +242,13 @@ def finish(in_pcb, routes_json, out_pcb):
     for k, (y, s) in enumerate(zip(rows, bot)):
         if k not in (4, 5, 6):          # U14 / D11 sit where these labels would go (the tray carries the legend)
             text(board, s, xl, y, B, 0.8, justify='left')
-    text(board, 'BOOT', 11.0, 16.9, F, 0.7)
+    text(board, 'BOOT', 7.4, 19.0, F, 0.7, rot=90)
     text(board, 'EXT', 31.0, 3.6, F, 0.7)
     text(board, 'INT', 41.2, 3.0, F, 0.7)
     text(board, 'LA_RP2040 V2', 23.5, 19.6, F, 1.0, thick=0.16)
     text(board, 'eetree.cn', 23.5, 18.1, F, 0.7)
     text(board, 'LA_RP2040 V2.0  2026-11', 15.0, 19.9, B, 0.8)
-    text(board, 'IO 1.65-5.5V  A0-A2 0-3.3V', 12.0, 1.2, B, 0.8)
+    text(board, 'IO 1.65-5.5V  A0-A2 0-3.3V', 15.5, 1.2, B, 0.7)
     text(board, 'RUN', 26.6, 1.3, B, 0.7); text(board, 'SWC', 28.9, 1.3, B, 0.7); text(board, 'SWD', 31.2, 1.3, B, 0.7)
 
     filler = pcbnew.ZONE_FILLER(board)

@@ -15,6 +15,10 @@
 
 > **状态：设计文件已通过 KiCad 9.0.9 的 ERC / DRC（结果见「验证」），没有打样和实物测试。** 投板前请按文末「投板前检查清单」核对。
 
+![PCB 正面](doc/LA_RP2040_V2_render_top.png)
+
+![外壳](doc/enclosure_closed.png)
+
 ## 目录
 
 ```
@@ -25,7 +29,7 @@ enclosure/  外壳 CadQuery 源码、STEP、STL、视图
 gen/        生成脚本：design.py 是唯一数据源（器件、网表、布局）
 ```
 
-原理图和 PCB 都由 `gen/design.py` 生成，因此二者不会不一致。可以直接用 KiCad 打开 `kicad/LA_RP2040_V2.kicad_pro` 手工修改；但重新运行 `gen/build.sh` 会覆盖手工改动，需要长期保留的修改请写进 `gen/design.py`。
+原理图和 PCB 都由 `gen/design.py` 生成，因此二者不会不一致。改动器件位置后需要 `gen/build.sh route` 重新布线；布线器对同一布局的结果是确定的，但布局变动后可能有个别连接布不通，需要调整 `ROUTE_ORDER` / `ROUTE_LAYER_COST` 或局部布局。可以直接用 KiCad 打开 `kicad/LA_RP2040_V2.kicad_pro` 手工修改；但重新运行 `gen/build.sh` 会覆盖手工改动，需要长期保留的修改请写进 `gen/design.py`。
 
 ## V1 问题分析：USB-C 直连找不到设备，A-to-C 线正常
 
@@ -121,12 +125,19 @@ Microchip 参考设计的要点是：每个信号一颗 1T45 且方向由 MCU �
 
 ## PCB
 
-- 58 × 21 mm，4 层，1.6 mm。F.Cu / B.Cu 走信号并铺 GND，In1 为 GND 平面，In2 为 3V3 平面（部分信号借用了 In2）。
+- 58 × 21 mm，4 层，1.6 mm。F.Cu / B.Cu 走信号并铺 GND；In1 是 GND 层；In2 是 3V3 铺铜与信号混用层。
 - 规则：线宽 / 间距 0.15 / 0.15 mm，过孔 0.55 / 0.3 mm，铜到板边 ≥ 0.3 mm，普通 4 层工艺即可，不需要盲埋孔。
 - 器件 113 个，正反两面贴片，最小封装 0402、QFN-56（0.4 mm）、USON-8。
 - 位号只放在 Fab 层；丝印只保留接口脚名、开关和版本信息。
 - 两个 M2 安装孔在 USB 端，J2 是自建封装（`kicad/LA_RP2040_V2.pretty`）。
-- 走线由 `gen/route.py`（网格 A* 自动布线）生成，再由 KiCad DRC 检查。走线没有经过人工优化，形态不如手工布线整齐。
+- RP2040 电源脚和电平转换器的扇出是按规则预先确定的（`design.py` 里的 `PRE_VIAS` / `PRE_LINKS`），其余走线由 `gen/route.py`（网格 A* 自动布线 + 有界回溯拆线重布）完成，最后由 KiCad DRC 检查。
+
+**自动布线的局限，请在投板前评估：**
+
+- 走线没有经过人工优化，折线多、过孔多，形态不如手工布线。
+- 为了布通，相当一部分信号借用了内层：In2 上有大量信号线，In1（GND 层）上也有少量走线，所以**两个内层都不是完整平面**。GND 的连通由 In1 铺铜、正反面 GND 铺铜和过孔共同保证；3V3 的连通由 In2 铺铜加上显式的连接线保证（DRC 的连通性检查覆盖这两个网络）。
+- 对这块板的信号速率（SWD 几 MHz、USB 全速 12 Mbps、ADC 500 kSa/s）这通常可以工作，但回流路径和抗干扰不如完整地平面。如果要作为正式产品量产，建议以这份布局和网表为起点，在 KiCad 里人工重布内层被占用的部分，恢复完整的 GND 平面。
+- USB D+ / D− 没有做差分等长和阻抗控制。
 
 ## 外壳
 
@@ -135,7 +146,7 @@ Microchip 参考设计的要点是：每个信号一颗 1T45 且方向由 MCU �
 - 外形 61.4 × 24.7 × 10.1 mm，上盖 + 底壳，四周止口搭接，USB 端两颗 M2×8 自攻螺丝穿过 PCB 安装孔锁紧，排针端靠两侧卡扣和上盖压柱固定。
 - 开口：USB-C、2×8 排针、VIO 拨动开关（侧面带指槽）、5 个 LED 孔、BOOT 针孔。
 - 上盖刻有管脚名和功能，底壳刻有背面一排的管脚名。
-- 输出 `LA_RP2040_V2_lid/tray.step/.stl`、装配体 STEP 和视图。壁厚 1.6 mm（USB 端 1.2 mm），按 FDM / 光固化 3D 打印设计；开模注塑需要另加拔模斜度。
+- 输出 `LA_RP2040_V2_lid/tray.step/.stl`；渲染图在 `doc/enclosure_*.png`（图中的 PCB 和连接器是占位模型）。设置 `ENCLOSURE_FULL=1` 可额外导出装配体 STEP 和线框视图。壁厚 1.6 mm（USB 端 1.2 mm），按 FDM / 光固化 3D 打印设计；开模注塑需要另加拔模斜度。
 
 ## 固件
 
@@ -152,8 +163,8 @@ Microchip 参考设计的要点是：每个信号一颗 1T45 且方向由 MCU �
 需要 Python 3 + numpy、Docker（`kicad/kicad:9.0` 官方镜像）；外壳需要 `pip install cadquery`。
 
 ```bash
-gen/build.sh            # 原理图 → 网表核对 → 布局 → 自动布线（较慢）→ 铺铜 → ERC / DRC
-gen/build.sh noroute    # 复用 build/routes.json，跳过布线
+gen/build.sh            # 原理图 → 网表核对 → 布局 → 载入已保存的布线（gen/routes.json）→ 铺铜 → ERC / DRC
+gen/build.sh route      # 先重新自动布线并修补连通性（15–30 分钟），再执行上面的流程
 gen/export_fab.sh       # Gerber、钻孔、坐标、BOM、PDF、SVG、STEP
 python3 enclosure/enclosure.py enclosure
 ```
@@ -173,4 +184,4 @@ python3 enclosure/enclosure.py enclosure
 5. **SWDIO 470 Ω 方案**的最高 SWD 速率需要实测，建议从 1 MHz 开始。
 6. **LED 限流 470 Ω** 沿用官方 Probe 的取值，绿光 LED 在 3.3 V 下会比较暗，可按实际亮度调整。
 7. **外壳公差**：止口间隙 0.12 mm、PCB 四周间隙 0.25 mm，需按打印工艺试装后调整。
-8. 自动布线的 USB D+ / D− 没有做差分等长和阻抗控制（全速 12 Mbps，走线很短，通常没有问题）。
+8. 内层平面不完整（见「PCB」一节），ADC 的噪声和 SWD 的最高速率需要实测。

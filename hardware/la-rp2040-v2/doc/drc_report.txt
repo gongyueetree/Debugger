@@ -1,0 +1,14 @@
+** Drc report for LA_RP2040_V2.kicad_pcb **
+** Created on 2026-11-12T18:49:59+0000 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 1 DRC violations **
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(141.2000 mm, 104.4000 mm): Via [/DIR567] on F.Cu - B.Cu
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

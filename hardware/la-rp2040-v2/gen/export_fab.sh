@@ -25,14 +25,14 @@ for side in front back; do
   $K kicad-cli pcb export svg -o doc/${P}_pcb_$side.svg --layers $L $M --page-size-mode 2 --exclude-drawing-sheet $PCB >/dev/null
 done
 $K kicad-cli pcb export svg -o doc/${P}_pcb_inner.svg --layers In1.Cu,In2.Cu,Edge.Cuts --page-size-mode 2 --exclude-drawing-sheet $PCB >/dev/null
-$K kicad-cli pcb export pdf -o doc/${P}_pcb.pdf --layers F.Cu,In1.Cu,In2.Cu,B.Cu,F.SilkS,B.SilkS,F.Fab,B.Fab,Edge.Cuts \
-  --mode-multipage --include-border-title $PCB >/dev/null 2>&1 || \
-$K kicad-cli pcb export pdf -o doc/${P}_pcb.pdf --layers F.Cu,B.Cu,F.SilkS,B.SilkS,Edge.Cuts $PCB >/dev/null
+rm -rf doc/pcb_layers && $K kicad-cli pcb export pdf -o doc/pcb_layers --layers F.Cu,In1.Cu,In2.Cu,B.Cu,F.Fab,B.Fab \
+  --common-layers Edge.Cuts --mode-separate $PCB >/dev/null
 $K kicad-cli pcb export step -o fab/${P}_board.step --subst-models --force $PCB >/dev/null 2>&1 || echo "STEP export skipped"
 if [ -n "$KICAD_3DMODELS" ]; then
   for side in top bottom; do
-    $K kicad-cli pcb render -o doc/${P}_render_$side.png --side $side --width 1800 --height 900 --quality high \
+    $K kicad-cli pcb render -o doc/${P}_render_$side.png --side $side --width 1800 --height 900 --quality high --zoom 1.9 \
       --background opaque $PCB >/dev/null 2>&1 || echo "render $side skipped"
   done
 fi
-ls fab fab/gerber doc
+rm -f fab/gerber/*.gbrjob
+ls fab fab/gerber doc doc/pcb_layers

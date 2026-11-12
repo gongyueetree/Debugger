@@ -12,6 +12,7 @@ import heapq
 import json
 import math
 import os
+import pickle
 import sys
 import time
 
@@ -538,7 +539,12 @@ class Router:
             self.commit(u, [path], end_vias=[path[-1][1]])
             return True, hit
         if u['kind'] == 'link':
-            path = self.search(nid, u['src'], targets=set(u['dst']), soft=soft)
+            path = None
+            for _ in range(4):
+                path = self.search(nid, u['src'], targets=set(u['dst']), soft=soft)
+                if path is None or not self.crowded_vias(path):
+                    break
+                path = None
             if path is None:
                 return False, set()
             hit = self.rip_all(nid, path) if soft else set()
@@ -587,6 +593,18 @@ class Router:
                         tree.add((l_, path[k][1]))
             self.commit(u, [path])
         return True, hits
+
+    def crowded_vias(self, path):
+        """True (and penalise the spot) if a path changes layer twice within less than a via pitch."""
+        vs = [path[k][1] for k in range(len(path) - 1) if path[k][0] != path[k + 1][0]]
+        near = [(a, b) for i_, a in enumerate(vs) for b in vs[i_ + 1:] if a != b and
+                math.hypot((a % self.nx - b % self.nx) * G, (a // self.nx - b // self.nx) * G) < D.VIA_D + 0.3]
+        for a, b in near:
+            x, y = (b % self.nx) * G, (b // self.nx) * G
+            sy, sx, m = self.rect_mask(x, y, x, y, 0.6)
+            for li in range(NL):
+                self.hist[li][sy, sx] += np.where(m, 200, 0).astype(np.int32)
+        return bool(near)
 
     def terminal_cells(self, pi):
         """Cells that count as 'this pad': the pad itself plus everything pre-routed to it
@@ -648,6 +666,8 @@ class Router:
         return f"{self.net_name[u['nid']]}[{pads}{'…' if len(u['pads']) > 3 else ''}]"
 
     def build_units(self):
+        for i in self.pad_cells:
+            self.terminal_cells(i)
         plane_ids = {self.net_id[n] for n in D.PLANES if n in self.net_id}
         by_net = {}
         for i, p in enumerate(self.pads):
@@ -736,7 +756,7 @@ class Router:
 
     # ── keep the +3V3 plane (In2) in one piece: bridge islands cut off by borrowed signal tracks ──
     def plane_components(self, li, nid):
-        ZC = 0.2 + 0.1 + 0.02           # zone clearance + half the minimum pour width + margin
+        ZC = 0.15 + 0.075 + 0.02        # zone clearance + half the minimum pour width + margin (see gen_pcb.zone)
         blocked = (self.pad_own[li] == -1)
         blocked = blocked | ((self.pad_own[li] != 0) & (self.pad_own[li] != nid))
         solid = np.zeros((self.ny, self.nx), bool)
@@ -785,8 +805,8 @@ class Router:
             return 0
         li, nid = LAYERS.index(lname), self.net_id[net]
         added, gave_up = 0, set()
-        deadline = time.time() + 600
-        for _ in range(int(os.environ.get('ROUTE_BRIDGES', 40))):
+        deadline = time.time() + 1500
+        for _ in range(int(os.environ.get('ROUTE_BRIDGES', 0))):
             label = self.plane_components(li, nid).ravel()
             comp = {}
             for idx, vn in self.via_at.items():
@@ -836,8 +856,9 @@ class Router:
             print(f'pass {it + 1}', flush=True)
             failed = self.route_all(budget)
             bridges = 0
-            for net, lname in D.PLANES.items():
-                bridges += self.repair_plane(net, lname)
+            if os.environ.get('ROUTE_BRIDGES'):
+                for net, lname in D.PLANES.items():
+                    bridges += self.repair_plane(net, lname)
             print(f'  {len(failed)} unrouted, {bridges} plane bridge(s)', flush=True)
             if best is None or len(failed) < best[0]:
                 best = (len(failed), self.snapshot(), [self.name(u) for u in failed])
@@ -848,6 +869,38 @@ class Router:
         self.restore(best[1])
         print(f'best pass: {best[0]} unrouted {best[2]}')
         return best[2]
+
+    def save(self, path):
+        fg, self.find_group = self.find_group, None        # closures do not pickle; groups are cached in _term
+        for i in self.pad_cells:
+            pass
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
+        self.find_group = fg
+
+    def add_links(self, pairs, budget=900):
+        """Connect point pairs that KiCad reported as unconnected (plane islands), with rip-up repair."""
+        deadline = time.time() + budget
+        ok = 0
+        for pr in pairs:
+            nid = self.net_id[pr['net']]
+            ends = []
+            for e in (pr['a'], pr['b']):
+                idx = int(round(e['y'] / G)) * self.nx + int(round(e['x'] / G))
+                layers = range(NL) if e['layer'] == '*' else [LAYERS.index(e['layer'])]
+                ends.append([(l, idx) for l in layers])
+            u = self.add_unit('link', nid, [], 9)
+            u['src'], u['dst'] = ends
+            if self.try_place(u, 3, deadline):
+                ok += 1
+            else:
+                print('  link failed:', pr['a'], pr['b'], flush=True)
+        print(f'links: {ok} of {len(pairs)} placed', flush=True)
+        spec = os.environ.get('LINK_PLANE')            # e.g. GND:8 → also tie up to 8 stranded GND via groups
+        if spec:
+            net, n = spec.split(':')
+            os.environ['ROUTE_BRIDGES'] = n
+            print(f'plane links for {net}:', self.repair_plane(net, D.PLANES[net]), flush=True)
 
     def export(self, path):
         tracks, vias = [], {}
@@ -957,7 +1010,16 @@ if __name__ == '__main__':
     if sys.argv[1] == '--bridge':
         bridge(*sys.argv[2:6])
         sys.exit(0)
+    if sys.argv[1] == '--links':          # route.py --links state.pkl pairs.json out.json
+        with open(sys.argv[2], 'rb') as f:
+            r = pickle.load(f)
+        r.add_links(json.load(open(sys.argv[3])))
+        r.export(sys.argv[4])
+        r.save(sys.argv[2])
+        sys.exit(0)
     r = Router(json.load(open(sys.argv[1])))
     failed = r.run()
     r.export(sys.argv[2])
+    if os.environ.get('ROUTE_SAVE'):
+        r.save(os.environ['ROUTE_SAVE'])
     sys.exit(1 if failed else 0)
