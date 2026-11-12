@@ -1,7 +1,8 @@
-"""Build all three firmware profiles from pinned upstream sources or source bundle.
+"""Build the three firmware profiles for LA_RP2040 V1 and V2 from pinned upstream sources or source bundle.
 Prerequisites: Python 3.10+, Git, CMake, Ninja, Arm GNU Toolchain (incl. newlib).
 Online: python firmware/build.py --work /path/to/empty/build-area
 Offline: extract firmware-sources.tar.gz; use --work /path/to/firmware-sources
+Boards: --board v1 (GP20..GP28 direct), --board v2 (level-shifted, Debug Probe pin map) or --board all (default).
 """
 import argparse, hashlib, json, os, shutil, subprocess, sys
 from pathlib import Path
@@ -14,7 +15,7 @@ REPOS={
  'logic-analyzer':('https://github.com/dgatf/logic_analyzer_rp2040.git','1b93e38126ca159a57b13c624b816e8e6eee15e9')}
 def run(*args,**kw):subprocess.run(list(map(str,args)),check=True,**kw)
 def main():
- p=argparse.ArgumentParser();p.add_argument('--work',type=Path,required=True);p.add_argument('--output',type=Path,default=ROOT/'dist/firmware');a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--work',type=Path,required=True);p.add_argument('--output',type=Path,default=ROOT/'dist/firmware');p.add_argument('--board',choices=['v1','v2','all'],default='all');a=p.parse_args()
  work=a.work.resolve();work.mkdir(parents=True,exist_ok=True);a.output.mkdir(parents=True,exist_ok=True)
  bundled=(work/'SOURCE_BUNDLE.json').exists()
  for name,(url,sha) in REPOS.items():
@@ -31,15 +32,20 @@ def main():
     check=subprocess.run(['git','apply','--reverse','--check',str(patch)],cwd=dest,capture_output=True)
     if check.returncode:run('git','apply',patch,cwd=dest)
  env=os.environ.copy();env['PICO_SDK_PATH']=str(work/'pico-sdk')
- sources=[('dap',work/'debugprobe','debugprobe_on_pico'),('sump8',work/'logic-analyzer/src','logic_analyzer'),('adc12',HERE/'adc12','la_rp2040_adc12')]
+ # V1: Pico-style board, 8 MiB flash.  V2: official Debug Probe board definition, 2 MiB W25Q16.
+ BOARDS={'v1':dict(pico_board='pico',flash=8388608,dap='debugprobe_on_pico',prefix='la-rp2040-'),
+         'v2':dict(pico_board='debug_probe',flash=2097152,dap='debugprobe',prefix='la-rp2040-v2-')}
  records=[]
  from bin2uf2 import convert
- for name,source,target in sources:
-  build=work/(name+'-build')
-  run('cmake','-S',source,'-B',build,'-G','Ninja','-DPICO_BOARD=pico','-DPICO_NO_PICOTOOL=1','-DCMAKE_POLICY_VERSION_MINIMUM=3.5','-DPICO_DEFAULT_BOOT_STAGE2=boot2_generic_03h','-DPICO_FLASH_SIZE_BYTES=8388608',env=env)
-  run('cmake','--build',build,'-j','4',env=env)
-  data=convert((build/(target+'.bin')).read_bytes());out=a.output/f'la-rp2040-{name}.uf2';out.write_bytes(data)
-  records.append({'profile':name,'filename':out.name,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)})
+ for board in (['v1','v2'] if a.board=='all' else [a.board]):
+  b=BOARDS[board]
+  sources=[('dap',work/'debugprobe',b['dap']),('sump8',work/'logic-analyzer/src','logic_analyzer'),('adc12',HERE/'adc12','la_rp2040_adc12')]
+  for name,source,target in sources:
+   build=work/f'{board}-{name}-build'
+   run('cmake','-S',source,'-B',build,'-G','Ninja',f"-DPICO_BOARD={b['pico_board']}",f'-DLA_BOARD={board}','-DPICO_NO_PICOTOOL=1','-DCMAKE_POLICY_VERSION_MINIMUM=3.5','-DPICO_DEFAULT_BOOT_STAGE2=boot2_generic_03h',f"-DPICO_FLASH_SIZE_BYTES={b['flash']}",env=env)
+   run('cmake','--build',build,'-j','4',env=env)
+   data=convert((build/(target+'.bin')).read_bytes());out=a.output/f"{b['prefix']}{name}.uf2";out.write_bytes(data)
+   records.append({'board':board,'profile':name,'filename':out.name,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)})
  (a.output/'build-results.json').write_text(json.dumps(records,indent=2)+'\n')
- print('Built three UF2 profiles. Hardware verification is still required.')
+ print(f'Built {len(records)} UF2 files. Hardware verification is still required.')
 if __name__=='__main__':main()

@@ -172,11 +172,47 @@ class FirmwareArtifactTest(unittest.TestCase):
   import hashlib
   root=Path(__file__).resolve().parent.parent/'dist/firmware'
   manifest=json.loads((root/'manifest.json').read_text())
-  self.assertEqual(len(manifest['firmwares']),3)
-  for f in manifest['firmwares']:
+  self.assertEqual(len(manifest['firmwares']),3);self.assertEqual(len(manifest['firmwares_v2']),3)
+  self.assertEqual([f['filename'] for f in manifest['firmwares_v2']],['la-rp2040-v2-dap.uf2','la-rp2040-v2-sump8.uf2','la-rp2040-v2-adc12.uf2'])
+  for f in manifest['firmwares']+manifest['firmwares_v2']:
    raw=(root/f['filename']).read_bytes();self.assertEqual(hashlib.sha256(raw).hexdigest(),f['sha256'])
    self.assertEqual(len(raw)%512,0);count=len(raw)//512
    for n in range(count):
     block=raw[n*512:(n+1)*512];h=struct.unpack('<8I',block[:32])
     self.assertEqual(h,(0x0a324655,0x9e5d5157,0x2000,0x10000000+n*256,256,n,count,0xe48bff56))
     self.assertEqual(struct.unpack('<I',block[508:])[0],0x0ab16f30)
+
+class BoardRevisionTest(unittest.TestCase):
+ def test_v2_products_select_profiles_and_board(self):
+  from bridge.rp2040 import board_of, BOARDS
+  self.assertEqual(profile(0xa,'LA-RP2040 V2 SUMP8 v1')[:2],(5,'sump8'));self.assertEqual(profile(0xa,'LA-RP2040 V2 ADC12 v1')[:2],(7,'adc12'))
+  self.assertIn('V2',profile(0xa,'LA-RP2040 V2 SUMP8 v1')[2]);self.assertNotIn('V2',profile(0xa,'LA-RP2040 SUMP8 v1')[2])
+  self.assertEqual([board_of(x) for x in ['LA-RP2040 V2 CMSIS-DAP','LA-RP2040 CMSIS-DAP','LA-RP2040 V2 ADC12 v1','Debug Probe (CMSIS-DAP)','Pico']],['v2','v1','v2','v2',''])
+  self.assertEqual(len({p for b in BOARDS.values() for p in b['products'].values()}),6)
+ def test_v2_logic_depth_and_channel_names(self):
+  self.assertEqual(validate_capture({'samples':50000},False,'v2')['samples'],50000)
+  with self.assertRaises(UserError):validate_capture({'samples':50004},False,'v2')
+  self.assertEqual(validate_capture({'samples':100000},False,'v1')['samples'],100000)
+  files=dict(exports(bytes([0,1,0x80,0x08]),1000000,'v2'))
+  header=files['logic.csv'].decode().splitlines()[0]
+  self.assertEqual(header,'time_s,D0_GP12,D1_GP13,D2_GP20,D3_GP4,D4_GP5,D5_GP23,D6_GP24,D7_GP25')
+  with zipfile.ZipFile(io.BytesIO(files['logic.sr'])) as z:self.assertIn(b'probe4=D3_GP4',z.read('metadata'))
+ def test_v2_firmware_packs_the_sampled_window_into_channel_order(self):
+  # The V2 SUMP build samples GP4..GP25 as one word; its pack_channels() must agree with the agent's channel map.
+  import re
+  from bridge.rp2040 import BOARDS
+  patch=(Path(__file__).resolve().parent.parent/'firmware/patches/sump8.patch').read_text()
+  expr=re.search(r'static inline uint pack_channels\(uint32_t w\) \{\n\+\s+return (.*);',patch).group(1)
+  base=int(re.search(r'#define SAMPLE_WINDOW_BASE (\d+)',patch).group(1));bits=int(re.search(r'#define SAMPLE_WINDOW_BITS (\d+)',patch).group(1))
+  gpios=[int(x) for x in re.search(r'channel_gpio_\[8\] = \{([^}]*)\}',patch).group(1).split(',')]
+  self.assertEqual(tuple(gpios),BOARDS['v2']['logic_gpio']);self.assertTrue(all(base<=g<base+bits for g in gpios))
+  for channel,gpio in enumerate(gpios):self.assertEqual(eval(expr,{'w':1<<(gpio-base)}),1<<channel)
+  others=sum(1<<k for k in range(bits) if k+base not in gpios);self.assertEqual(eval(expr,{'w':others}),0)
+ def test_logic_plan_uses_connected_board_limits(self):
+  tmp=tempfile.TemporaryDirectory();s=Studio(tmp.name);d=dict(id='rp:2',name='LA-RP2040 V2',family='rp2040',profile='sump8',mode=5,bcd=0,serial='E1',port='/dev/ttyACM1',board='v2')
+  s.enumerate=lambda:([d],[dict(path='/dev/ttyACM1',vid=0x2e8a,pid=0x000a,serial='E1')],[])
+  try:
+   with self.assertRaises(UserError):s.prepare({'op':'logic.capture','device_id':'rp:2','params':{'samples':65536}})
+   self.assertEqual(s.prepare({'op':'logic.capture','device_id':'rp:2','params':{'samples':50000}})['params']['board'],'v2')
+  finally:s.shutdown();tmp.cleanup()
+

@@ -1,21 +1,100 @@
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index d7a77fc..69d9623 100644
+index d7a77fc..b6ca739 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -48,3 +48,8 @@ target_link_libraries(${PROJECT_NAME}
+@@ -48,3 +48,14 @@ target_link_libraries(${PROJECT_NAME}
  
  pico_enable_stdio_usb(${PROJECT_NAME} 1)
  pico_enable_stdio_uart(${PROJECT_NAME} 0)
 +
-+target_compile_definitions(logic_analyzer PRIVATE PICO_STDIO_USB_DEFAULT_CRLF=0 PICO_STDIO_USB_ENABLE_RESET_VIA_BAUD_RATE=0 USBD_PRODUCT="LA-RP2040 SUMP8 v1")
++target_compile_definitions(logic_analyzer PRIVATE PICO_STDIO_USB_DEFAULT_CRLF=0 PICO_STDIO_USB_ENABLE_RESET_VIA_BAUD_RATE=0)
++# LA_BOARD=v2 selects the level-shifted LA_RP2040 V2 board (non-contiguous inputs, 32-bit samples).
++if (LA_BOARD STREQUAL "v2")
++    target_compile_definitions(logic_analyzer PRIVATE LA_BOARD_V2=1 USBD_PRODUCT="LA-RP2040 V2 SUMP8 v1")
++else ()
++    target_compile_definitions(logic_analyzer PRIVATE USBD_PRODUCT="LA-RP2040 SUMP8 v1")
++endif ()
 +
 +# No C++ runtime is used; Pico SDK provides allocation overrides.
 +set_target_properties(logic_analyzer PROPERTIES LINKER_LANGUAGE C)
 diff --git a/src/capture.c b/src/capture.c
-index 333df63..5d6ebe1 100644
+index 333df63..0257f36 100644
 --- a/src/capture.c
 +++ b/src/capture.c
-@@ -81,8 +81,8 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+@@ -28,7 +28,27 @@
+ #define PRE_TRIGGER_RING_BITS 10
+ #define PRE_TRIGGER_BUFFER_SIZE (1 << PRE_TRIGGER_RING_BITS)
+ #define PRE_TRIGGER_RING_TRANSFER_COUNT ((0xffffffffu / PRE_TRIGGER_BUFFER_SIZE) * PRE_TRIGGER_BUFFER_SIZE)
++#ifdef LA_BOARD_V2
++/* LA_RP2040 V2: IO0..IO7 arrive on GP12, GP13, GP20, GP4, GP5, GP23, GP24, GP25.  One PIO "in" samples the
++ * whole GP4..GP25 window (22 bits) so all channels stay simultaneous; each sample is a 32-bit word and is
++ * reduced to 8 channel bits when read back.  Half the depth of the 16-bit build fits in RAM. */
++#define POST_TRIGGER_BUFFER_SIZE 50000
++#define SAMPLE_DMA_SIZE DMA_SIZE_32
++#define SAMPLE_RING_EXTRA 2
++#define SAMPLE_WINDOW_BASE 4
++#define SAMPLE_WINDOW_BITS 22
++typedef uint32_t sample_word_t;
++static const uint8_t channel_gpio_[8] = {12, 13, 20, 4, 5, 23, 24, 25};
++static const uint8_t dir_low_gpio_[3] = {18, 19, 22}; /* DIR0, DIR1, DIR3 default high: make all inputs */
++static inline uint pack_channels(uint32_t w) {
++    return ((w >> 8) & 0x03) | ((w >> 14) & 0x04) | ((w << 3) & 0x18) | ((w >> 14) & 0xe0);
++}
++#else
+ #define POST_TRIGGER_BUFFER_SIZE 100000
++#define SAMPLE_DMA_SIZE DMA_SIZE_16
++#define SAMPLE_RING_EXTRA 1
++typedef uint16_t sample_word_t;
++#endif
+ #define MAX_TRIGGER_COUNT 4
+ #define RATE_CHANGE_CLK 5000
+ 
+@@ -42,8 +62,8 @@ static uint offset_pre_trigger_, offset_post_trigger_, pre_trigger_samples_, pos
+ static int pre_trigger_first_, triggered_channel_;
+ static float clk_div_;
+ static volatile uint pio0_ctrl_ = (1 << sm_post_trigger_), pio1_ctrl_ = 0;
+-static uint16_t pre_trigger_buffer_[PRE_TRIGGER_BUFFER_SIZE]
+-    __attribute__((aligned(PRE_TRIGGER_BUFFER_SIZE * sizeof(uint16_t)))),
++static sample_word_t pre_trigger_buffer_[PRE_TRIGGER_BUFFER_SIZE]
++    __attribute__((aligned(PRE_TRIGGER_BUFFER_SIZE * sizeof(sample_word_t)))),
+     post_trigger_buffer_[POST_TRIGGER_BUFFER_SIZE];
+ static bool is_capturing_ = false, is_aborting_ = false;
+ static pio_sm_config pio_config_trigger_[MAX_TRIGGER_COUNT], pio_config_pre_trigger_, pio_config_post_trigger_,
+@@ -63,12 +83,33 @@ void capture_init(uint pin_base, uint pin_count, complete_handler_t handler) {
+     pin_base_ = pin_base;
+ 
+     // Init pins
++#ifdef LA_BOARD_V2
++    (void)pin_base;
++    pin_base_ = SAMPLE_WINDOW_BASE;
++    for (uint i = 0; i < 3; i++) { // translators to input before anything else
++        gpio_init(dir_low_gpio_[i]);
++        gpio_put(dir_low_gpio_[i], 0);
++        gpio_set_dir(dir_low_gpio_[i], true);
++    }
++    for (uint i = 0; i < 8; i++) { // the translators drive these pins; the board has its own idle resistors
++        gpio_init(channel_gpio_[i]);
++        gpio_set_dir(channel_gpio_[i], false);
++        gpio_disable_pulls(channel_gpio_[i]);
++    }
++#else
+     for (uint i = 0; i < pin_count_; i++) {
+         gpio_set_dir(pin_base_ + i, false);
+         gpio_pull_down(pin_base_ + i);
+     }
++#endif
+ }
+ 
++#ifdef LA_BOARD_V2
++#define SAMPLE_IN_BITS SAMPLE_WINDOW_BITS
++#else
++#define SAMPLE_IN_BITS pin_count_
++#endif
++
+ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+     if (pre_trigger_samples > samples) pre_trigger_samples = samples;
+ 
+@@ -81,8 +122,8 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
  
      // Set sys clock
      if (rate > RATE_CHANGE_CLK) {
@@ -26,7 +105,49 @@ index 333df63..5d6ebe1 100644
              debug_reinit();
          }
          clk_div_ = (float)clock_get_hz(clk_sys) / rate;
-@@ -204,7 +204,7 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+@@ -151,16 +192,16 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+         pio_config_pre_trigger_ = capture_slow_program_get_default_config(offset_pre_trigger_);
+     }
+     sm_config_set_in_pins(&pio_config_pre_trigger_, pin_base_);
+-    sm_config_set_in_shift(&pio_config_pre_trigger_, false, true, pin_count_);
++    sm_config_set_in_shift(&pio_config_pre_trigger_, false, true, SAMPLE_IN_BITS);
+     sm_config_set_clkdiv(&pio_config_pre_trigger_, clk_div_);
+     pio_sm_init(pio0, sm_pre_trigger_, offset_pre_trigger_, &pio_config_pre_trigger_);
+     if (rate > RATE_CHANGE_CLK)
+-        pio0->instr_mem[offset_pre_trigger_] = pio_encode_in(pio_pins, pin_count_);
++        pio0->instr_mem[offset_pre_trigger_] = pio_encode_in(pio_pins, SAMPLE_IN_BITS);
+     else
+-        pio0->instr_mem[offset_pre_trigger_] = pio_encode_in(pio_pins, pin_count_) | pio_encode_delay(31);
++        pio0->instr_mem[offset_pre_trigger_] = pio_encode_in(pio_pins, SAMPLE_IN_BITS) | pio_encode_delay(31);
+     dma_channel_config channel_config_pre_trigger = dma_channel_get_default_config(dma_channel_pre_trigger_);
+-    channel_config_set_transfer_data_size(&channel_config_pre_trigger, DMA_SIZE_16);
+-    channel_config_set_ring(&channel_config_pre_trigger, true, PRE_TRIGGER_RING_BITS + 1);
++    channel_config_set_transfer_data_size(&channel_config_pre_trigger, SAMPLE_DMA_SIZE);
++    channel_config_set_ring(&channel_config_pre_trigger, true, PRE_TRIGGER_RING_BITS + SAMPLE_RING_EXTRA);
+     channel_config_set_write_increment(&channel_config_pre_trigger, true);
+     channel_config_set_read_increment(&channel_config_pre_trigger, false);
+     channel_config_set_dreq(&channel_config_pre_trigger, pio_get_dreq(pio0, sm_pre_trigger_, false));
+@@ -179,15 +220,15 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
+         pio_config_post_trigger_ = capture_slow_program_get_default_config(offset_post_trigger_);
+     }
+     sm_config_set_in_pins(&pio_config_post_trigger_, pin_base_);
+-    sm_config_set_in_shift(&pio_config_post_trigger_, false, true, pin_count_);
++    sm_config_set_in_shift(&pio_config_post_trigger_, false, true, SAMPLE_IN_BITS);
+     sm_config_set_clkdiv(&pio_config_post_trigger_, clk_div_);
+     pio_sm_init(pio0, sm_post_trigger_, offset_post_trigger_, &pio_config_post_trigger_);
+     if (rate > RATE_CHANGE_CLK)
+-        pio0->instr_mem[offset_post_trigger_] = pio_encode_in(pio_pins, pin_count_);
++        pio0->instr_mem[offset_post_trigger_] = pio_encode_in(pio_pins, SAMPLE_IN_BITS);
+     else
+-        pio0->instr_mem[offset_post_trigger_] = pio_encode_in(pio_pins, pin_count_) | pio_encode_delay(31);
++        pio0->instr_mem[offset_post_trigger_] = pio_encode_in(pio_pins, SAMPLE_IN_BITS) | pio_encode_delay(31);
+     dma_channel_config channel_config_post_trigger = dma_channel_get_default_config(dma_channel_post_trigger_);
+-    channel_config_set_transfer_data_size(&channel_config_post_trigger, DMA_SIZE_16);
++    channel_config_set_transfer_data_size(&channel_config_post_trigger, SAMPLE_DMA_SIZE);
+     channel_config_set_write_increment(&channel_config_post_trigger, true);
+     channel_config_set_read_increment(&channel_config_post_trigger, false);
+     channel_config_set_dreq(&channel_config_post_trigger, pio_get_dreq(pio0, sm_post_trigger_, false));
+@@ -204,7 +245,7 @@ void capture_start(uint samples, uint rate, uint pre_trigger_samples) {
      sm_trigger_mask_ = 0;
      triggered_channel_ = -1;
      uint i = 0;
@@ -35,12 +156,35 @@ index 333df63..5d6ebe1 100644
          set_trigger(capture_config_.trigger[i]);
          i++;
      }
-@@ -333,7 +333,7 @@ static inline bool set_trigger(trigger_t trigger) {
+@@ -249,10 +290,18 @@ uint get_sample_index(int index) {
+         else if (pos >= PRE_TRIGGER_BUFFER_SIZE)
+             pos -= PRE_TRIGGER_BUFFER_SIZE;
+ 
++#ifdef LA_BOARD_V2
++        return pack_channels(pre_trigger_buffer_[pos]);
++#else
+         return pre_trigger_buffer_[pos];
++#endif
+     }
+ 
++#ifdef LA_BOARD_V2
++    return pack_channels(post_trigger_buffer_[index - (int)pre_trigger_count_]);
++#else
+     return post_trigger_buffer_[index - (int)pre_trigger_count_];
++#endif
+ }
+ 
+ uint get_samples_count(void) { return pre_trigger_count_ + post_trigger_samples_; }
+@@ -333,7 +382,11 @@ static inline bool set_trigger(trigger_t trigger) {
                  break;
          }
          sm_config_set_clkdiv(&pio_config_trigger_[trigger_count_], clk_div_);
 -        sm_config_set_in_pins(&pio_config_trigger_[trigger_count_], trigger.pin);
++#ifdef LA_BOARD_V2
++        sm_config_set_in_pins(&pio_config_trigger_[trigger_count_], channel_gpio_[trigger.pin & 7]);
++#else
 +        sm_config_set_in_pins(&pio_config_trigger_[trigger_count_], pin_base_ + trigger.pin);
++#endif
          pio_sm_init(pio1, sm_trigger_[trigger_count_], offset_trigger_[trigger_count_],
                      &pio_config_trigger_[trigger_count_]);
          sm_trigger_mask_ |= 1 << sm_trigger_[trigger_count_];
@@ -58,22 +202,35 @@ index e360147..1bbfe22 100644
  // Maximum number of triggers
  #define TRIGGERS_COUNT 4
 diff --git a/src/main.c b/src/main.c
-index 92a37b0..43cd2e2 100644
+index 92a37b0..6a553d3 100644
 --- a/src/main.c
 +++ b/src/main.c
-@@ -47,18 +47,18 @@ int main() {
+@@ -31,6 +31,12 @@ void capture(void);
+ void complete_handler(void);
+ void set_pin_config(void);
+ 
++#ifdef LA_BOARD_V2
++#define STATUS_LED 16 // yellow "RUN" LED
++#else
++#define STATUS_LED 0
++#endif
++
+ int main() {
+     // init
+     if (clock_get_hz(clk_sys) != 100000000) set_sys_clock_khz(100000, true);
+@@ -47,18 +53,18 @@ int main() {
          config_.trigger_edge ? "enabled" : "disabled");
  
      // led blink
 -    gpio_init(PICO_DEFAULT_LED_PIN);
 -    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
 -    gpio_put(PICO_DEFAULT_LED_PIN, 1);
-+    gpio_init(0);
-+    gpio_set_dir(0, GPIO_OUT);
-+    gpio_put(0, 1);
++    gpio_init(STATUS_LED);
++    gpio_set_dir(STATUS_LED, GPIO_OUT);
++    gpio_put(STATUS_LED, 1);
      sleep_ms(500);
 -    gpio_put(PICO_DEFAULT_LED_PIN, 0);
-+    gpio_put(0, 0);
++    gpio_put(STATUS_LED, 0);
  
 -    capture_init(0, capture_config_.channels, complete_handler);
 +    capture_init(20, capture_config_.channels, complete_handler);
@@ -82,29 +239,29 @@ index 92a37b0..43cd2e2 100644
          command_t command = sump_read();
          if (command == COMMAND_CAPTURE) {
 -            gpio_put(PICO_DEFAULT_LED_PIN, 1);
-+            gpio_put(0, 1);
++            gpio_put(STATUS_LED, 1);
              capture();
              debug_block("\nCapture complete. Samples count: %u Pre trigger count: %u ", get_samples_count(),
                          get_pre_trigger_count());
-@@ -70,7 +70,7 @@ int main() {
+@@ -70,7 +76,7 @@ int main() {
          } else if (command == COMMAND_RESET) {
              if (capture_is_busy()) capture_abort();
              sump_reset();
 -            gpio_put(PICO_DEFAULT_LED_PIN, 0);
-+            gpio_put(0, 0);
++            gpio_put(STATUS_LED, 0);
          }
          if (send_samples_) {
              if (clock_get_hz(clk_sys) != 100000000) {
-@@ -78,7 +78,7 @@ int main() {
+@@ -78,7 +84,7 @@ int main() {
                  debug_reinit();
              }
              sump_send_samples();
 -            gpio_put(PICO_DEFAULT_LED_PIN, 0);
-+            gpio_put(0, 0);
++            gpio_put(STATUS_LED, 0);
              send_samples_ = false;
          }
      }
-@@ -93,27 +93,7 @@ void complete_handler(void) {
+@@ -93,27 +99,7 @@ void complete_handler(void) {
  }
  
  void set_pin_config(void) {
@@ -137,16 +294,20 @@ index 92a37b0..43cd2e2 100644
 \ No newline at end of file
 +}
 diff --git a/src/protocol_sump.c b/src/protocol_sump.c
-index 49eb914..c1025e1 100644
+index 49eb914..b3ea7df 100644
 --- a/src/protocol_sump.c
 +++ b/src/protocol_sump.c
-@@ -25,8 +25,8 @@
+@@ -25,8 +25,12 @@
  // Sump metadata
  #define DEVICE_NAME "RP2040"
  #define DEVICE_VERSION "v0.1"
 -#define MAX_TOTAL_SAMPLES 200000   // bytes
 -#define MAX_SAMPLE_RATE 200000000  // Hz. Maximum rate for sump protocol
++#ifdef LA_BOARD_V2
++#define MAX_TOTAL_SAMPLES 50000    // samples; the V2 board stores 32-bit words
++#else
 +#define MAX_TOTAL_SAMPLES 100000   // bytes
++#endif
 +#define MAX_SAMPLE_RATE 100000000  // Hz. Maximum rate for sump protocol
  #define CLOCK_RATE \
      100000000  // Hz. This is required because clock divisor provided by libsigrok, is based on this value

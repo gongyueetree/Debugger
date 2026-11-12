@@ -143,7 +143,7 @@ class Studio:
    if d.get('serial') and not re.fullmatch(r'[A-Za-z0-9._-]{1,128}',d['serial']):raise UserError('设备序列号格式异常')
   if op in ['logic.capture','scope.capture']:
    from .rp2040 import validate_capture
-   p=validate_capture(p,analog=op=='scope.capture')
+   p=validate_capture(p,analog=op=='scope.capture',board=d.get('board') or 'v1');p['board']=d.get('board') or 'v1'
    required='adc12' if op=='scope.capture' else 'sump8'
    if d.get('profile')!=required:raise UserError('请先刷入本板的 '+required+' 固件')
    p['port']=d['port']
@@ -303,8 +303,9 @@ class Studio:
   if op=='logic.capture':
    from .rp2040 import capture, exports
    samples=capture(p,lambda:j['cancel_requested'],lambda s:self.log(j,s))
-   downloads=[self.artifact(name,data) for name,data in exports(samples,p['rate'])]
-   return {'source':'hardware','capture':{'rate':p['rate'],'count':len(samples),'channels':8,'gpio_base':20,'trigger':p['trigger'],'pretrigger':0},'samples_b64':base64.b64encode(samples).decode(),'downloads':downloads}
+   from .rp2040 import BOARDS as RP_BOARDS
+   board=p.get('board','v1');downloads=[self.artifact(name,data) for name,data in exports(samples,p['rate'],board)]
+   return {'source':'hardware','capture':{'rate':p['rate'],'count':len(samples),'channels':8,'gpio_base':20,'board':board,'gpio':list(RP_BOARDS[board]['logic_gpio']),'trigger':p['trigger'],'pretrigger':0},'samples_b64':base64.b64encode(samples).decode(),'downloads':downloads}
   if op in ['mcu.stop','xvc.stop']:
    key='debug' if op=='mcu.stop' else 'xvc'
    if getattr(self,key) and getattr(self,key+'_device')!=plan['device_id']:raise UserError('此设备不拥有该调试会话')

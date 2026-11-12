@@ -6,8 +6,12 @@ add_executable(la_rp2040_adc12 main.c)
 target_link_libraries(la_rp2040_adc12 pico_stdlib hardware_adc hardware_dma hardware_clocks)
 target_compile_definitions(la_rp2040_adc12 PRIVATE
     PICO_STDIO_USB_DEFAULT_CRLF=0
-    PICO_STDIO_USB_ENABLE_RESET_VIA_BAUD_RATE=0
-    USBD_PRODUCT="LA-RP2040 ADC12 v1")
+    PICO_STDIO_USB_ENABLE_RESET_VIA_BAUD_RATE=0)
+if (LA_BOARD STREQUAL "v2")
+    target_compile_definitions(la_rp2040_adc12 PRIVATE LA_BOARD_V2=1 USBD_PRODUCT="LA-RP2040 V2 ADC12 v1")
+else ()
+    target_compile_definitions(la_rp2040_adc12 PRIVATE USBD_PRODUCT="LA-RP2040 ADC12 v1")
+endif ()
 pico_enable_stdio_usb(la_rp2040_adc12 1)
 pico_enable_stdio_uart(la_rp2040_adc12 0)
 pico_add_extra_outputs(la_rp2040_adc12)

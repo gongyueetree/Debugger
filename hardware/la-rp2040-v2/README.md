@@ -150,13 +150,13 @@ Microchip 参考设计的要点是：每个信号一颗 1T45 且方向由 MCU �
 
 ## 固件
 
-- **官方 debugprobe**：从 Raspberry Pi 的 debugprobe 发布页下载 `debugprobe.uf2`（Debug Probe 版本，不是 Pico 版本），按住 BOOT 插入 USB，拖入 `RPI-RP2` 即可。Flash 为 W25Q16JV（2 MB），与官方 Probe 相同。
-- **本仓库的三份固件**（`firmware/`）还是按 V1 管脚编写的，**不能直接用于 V2**，需要改动：
-  - CMSIS-DAP：改用官方 Debug Probe 的板级配置即可。
-  - SUMP8 逻辑分析：8 路输入改为上表的非连续管脚（采样全部 GPIO 后重排），并在初始化时把 DIR0、DIR1、DIR3（GP18、GP19、GP22）拉低，使 8 路全部为输入。
-  - ADC12：ADC 管脚不变（GP26–28）；`docs/RP2040.md` 里的接线表需要更新。
-  - 板子的 Flash 是 2 MB，构建配置里的 8 MiB 需要改掉。
-- 网页工作台（`dist/hardware-data.js` 等）展示的仍是 V1 的管脚和板图。
+三种固件都有 V2 版本，在工作台的「RP2040 固件」页下载，或用 `python firmware/build.py --board v2` 构建。细节见 [`docs/RP2040.md`](../../docs/RP2040.md)。**固件只做了交叉编译和主机侧测试，没有在实板上运行过。**
+
+- **`la-rp2040-v2-dap.uf2`**：上游 debugprobe 的 Debug Probe 配置，外加经电平转换的 nRESET（IO2）。官方 `debugprobe.uf2` 也可以直接使用，只是没有 nRESET。
+- **`la-rp2040-v2-sump8.uf2`**：8 通道逻辑分析。因为 8 路不在连续管脚上，每个采样存 32 位，深度为 50000 点。
+- **`la-rp2040-v2-adc12.uf2`**：ADC 采集，协议与 V1 相同。
+- V1 固件不能刷到 V2 上使用：V1 把信号放在 GP20–GP28，而 V2 的这些脚接的是方向控制线和 IO2。
+- 网页工作台默认显示 V2 的接线；连接运行 V1 固件的板子时会按 USB 产品名切换到 V1。
 
 ## 重新生成
 
