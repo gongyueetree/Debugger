@@ -33,13 +33,14 @@ SNAP = G * 0.7072                        # a foreign feature is at most this far
 def fat_radius(extent, extra=0.05):
     """Grid cells within this radius must be free so copper reaching `extent` from the cell keeps CLR."""
     return max(0.0, extent + CLR - HALO + SNAP + extra)
-LAYERS = ('F.Cu', 'In2.Cu', 'B.Cu')    # In2 is the +3V3 plane; signals may borrow it at extra cost
+LAYERS = ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu')   # In1/In2 are the GND/+3V3 planes; signals may borrow them at extra cost
 NL = len(LAYERS)
-LAYER_COST = (0, 8, 0)                  # extra cost per step on each layer
+LAYER_COST = tuple(int(v) for v in os.environ.get('ROUTE_LAYER_COST', '0,40,8,0').split(','))  #             # extra cost per step on each layer (GND plane: last resort)
+POWER_LAYER_COST = (6, 40, 0, 6)            # supply trunks belong on the inner layer, not across the signal fan-out
 VIA_COST = 150
 NEW_VIA_COST = 120                      # stub: prefer re-using a same-net via within ~0.4 mm
-SOFT_COST = 400
-HIST_INC = 25
+SOFT_COST = 600
+HIST_INC = 60
 HIST_VICTIM = 12                        # extra cost where a ripped unit used to run
 STRAIGHT, DIAG = 10, 14
 
@@ -124,6 +125,7 @@ class Router:
                 sy, sx, m = self.rect_mask(p['x0'], p['y0'], p['x1'], p['y1'], VIA_R + 0.25)
                 self.novia[sy, sx] |= m
             p['big'] = big
+        self.build_fixed()
         # cells a track may end on, per pad
         for i, p in enumerate(self.pads):
             if p['nid'] < 0:
@@ -142,13 +144,149 @@ class Router:
             if not cells:
                 raise SystemExit(f"pad {p['ref']}.{p['num']} has no routable grid cell")
             self.pad_cells[i] = cells
+        self.reserve_escapes()
         self.rebuild_tracks()
+
+    def kicad_net(self, name):
+        return name if name in self.net_id else '/' + name
+
+    def build_fixed(self):
+        """Pre-routes from design.py (RP2040 supply fan-out) and the rule-based translator fan-out.
+        They are stamped as static obstacles: the router connects to them but never moves them."""
+        self.fixed_segs, self.fixed_vias, self.preconnected = [], {}, set()
+        self.fixed_via_names, self._term = {}, {}
+        parent = {}
+
+        def find(t):
+            parent.setdefault(t, t)
+            while parent[t] != t:
+                parent[t] = parent[parent[t]]
+                t = parent[t]
+            return t
+
+        self.find_group = find
+        pad_index = {(p['ref'], p['num']): i for i, p in enumerate(self.pads) if p['layers']}
+        via_pos = {}
+
+        def add_via(name, net, x, y):
+            idx = int(round(y / G)) * self.nx + int(round(x / G))
+            self.fixed_vias[idx] = self.net_id[self.kicad_net(net)]
+            self.fixed_via_names[name] = idx
+            via_pos[name] = (int(round(x / G)) * G, int(round(y / G)) * G)
+
+        def resolve(tok):
+            if isinstance(tok, tuple):
+                return tok
+            if tok in via_pos:
+                return via_pos[tok]
+            ref, num = tok.split('.')
+            i = pad_index[(ref, num)]
+            self.preconnected.add(i)
+            return (self.pads[i]['x'], self.pads[i]['y'])
+
+        def add_link(net, layer, a, b, w):
+            (xa, ya), (xb, yb) = resolve(a), resolve(b)
+            nid, li = self.net_id[self.kicad_net(net)], LAYERS.index(layer)
+            pts = [(xa, ya), (xb, yb)]
+            if isinstance(a, str) and (a.split('.')[0], a.split('.')[-1]) in pad_index:
+                p = self.pads[pad_index[(a.split('.')[0], a.split('.')[-1])]]
+                pw, ph = p['x1'] - p['x0'], p['y1'] - p['y0']
+                if max(pw, ph) / min(pw, ph) > 1.5:      # leave a fine-pitch pad along its own axis first
+                    pts.insert(1, (xb, ya) if pw > ph else (xa, yb))
+            for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+                if abs(x1 - x2) + abs(y1 - y2) > 1e-6:
+                    self.fixed_segs.append((li, x1, y1, x2, y2, w, nid))
+            parent[find(str(a))] = find(str(b))
+
+        for name, (net, x, y) in D.PRE_VIAS.items():
+            add_via(name, net, x, y)
+        for c in D.COMPONENTS:
+            if c['value'] != '74LVC1T45':
+                continue
+            cx, cy = c['pcb'][0], c['pcb'][1]
+            layer = 'B.Cu' if c['pcb'][3] == 'B' else 'F.Cu'
+            for pin in ('1', '2', '5', '6'):
+                p = self.pads[pad_index[(c['ref'], pin)]]
+                vx = cx + (D.TRANSLATOR_VIA_DX if p['x'] > cx else -D.TRANSLATOR_VIA_DX)
+                vy = cy if pin in ('2', '5') else cy + (0.8 if p['y'] > cy else -0.8)
+                name = f"{c['ref']}.v{pin}"
+                add_via(name, strip(p['net']), vx, vy)
+                add_link(strip(p['net']), layer, f"{c['ref']}.{pin}", name, 0.2)
+        for net, layer, a, b, w in D.PRE_LINKS:
+            add_link(net, layer, a, b, w)
+        clash = 0
+        for name, idx in self.fixed_via_names.items():          # a fixed via must not sit on or beside a pad
+            x, y = (idx % self.nx) * G, (idx // self.nx) * G
+            for p in self.pads:
+                if not p['layers']:
+                    continue
+                dx = max(p['x0'] - x, 0, x - p['x1']); dy = max(p['y0'] - y, 0, y - p['y1'])
+                gap = math.hypot(dx, dy) - VIA_R
+                need = 0.05 if p['nid'] == self.fixed_vias[idx] and not p['big'] else CLR + 0.05
+                if p['big'] and p['nid'] == self.fixed_vias[idx]:
+                    continue
+                if gap < need and not (p['drill'] > 0 and p['nid'] == self.fixed_vias[idx]):
+                    clash += 1
+                    print(f"  fixed via {name} at ({x:.1f}, {y:.1f}) too close to {p['ref']}.{p['num']} [{p['net']}]: {gap:.2f} mm")
+        if clash:
+            raise SystemExit(f'{clash} fixed-via placement conflict(s)')
+        for (li, xa, ya, xb, yb, w, nid) in self.fixed_segs:
+            sy, sx, m = self.seg_mask(xa, ya, xb, yb, w / 2 + HALO)
+            self.claim(self.pad_own[li], sy, sx, m, nid)
+        for idx, nid in self.fixed_vias.items():
+            x, y = (idx % self.nx) * G, (idx // self.nx) * G
+            sy, sx, m = self.rect_mask(x, y, x, y, VIA_R + HALO)
+            for li in range(NL):
+                self.claim(self.pad_own[li], sy, sx, m, nid)
+
+    def reserve_escapes(self):
+        """Give every IC pin a private corridor straight out of its pad, so that tracks of other nets
+        cannot run along a pad row and fence the neighbouring pins in.  Also make the inside of the
+        QFN (between pad ring and exposed pad) expensive: it is for the power-pin vias."""
+        by_ref = {}
+        for p in self.pads:
+            by_ref.setdefault(p['ref'], []).append(p)
+        self.base_cost = [np.zeros((self.ny, self.nx), np.int32) for _ in LAYERS]
+        for ref, pads in by_ref.items():
+            smd = [p for p in pads if p['drill'] == 0 and p['layers']]
+            if len(smd) < 5:
+                continue
+            cx = sum(p['x'] for p in smd) / len(smd); cy = sum(p['y'] for p in smd) / len(smd)
+            reach = 1.0 if len(smd) > 20 else 0.6
+            for p in smd:
+                if p['nid'] <= 0 or p['big']:
+                    continue
+                w, h = p['x1'] - p['x0'], p['y1'] - p['y0']
+                if max(w, h) / min(w, h) >= 1.3:
+                    horizontal = w > h
+                else:                               # squarish pad (chip passives): follow the part's axis
+                    horizontal = abs(p['x'] - cx) >= abs(p['y'] - cy)
+                if horizontal:
+                    x0, x1 = (p['x1'], p['x1'] + reach) if p['x'] > cx else (p['x0'] - reach, p['x0'])
+                    y0, y1 = p['y0'], p['y1']
+                else:
+                    y0, y1 = (p['y1'], p['y1'] + reach) if p['y'] > cy else (p['y0'] - reach, p['y0'])
+                    x0, x1 = p['x0'], p['x1']
+                sy, sx, m = self.rect_mask(x0, y0, x1, y1, HALO)
+                for li, lname in enumerate(LAYERS):
+                    if lname in p['layers']:
+                        cur = self.pad_own[li][sy, sx]
+                        self.pad_own[li][sy, sx] = np.where(m & (cur == 0), p['nid'], cur)
+            if len(smd) > 20:
+                xs = [p['x'] for p in smd]; ys = [p['y'] for p in smd]
+                li = LAYERS.index(smd[0]['layers'][0])
+                sy, sx = self.window(min(xs), min(ys), max(xs), max(ys), 0)
+                self.base_cost[li][sy, sx] = 30
 
     # ── dynamic (track) obstacle maps ──
     def rebuild_tracks(self):
         self.trk = [np.zeros((self.ny, self.nx), np.int32) for _ in LAYERS]
-        self.via_at = {}                # cell index → net id
+        self.via_at = dict(self.fixed_vias)     # cell index → net id
         self.via_near = np.zeros((self.ny, self.nx), bool)
+        for idx in self.fixed_vias:
+            x, y = (idx % self.nx) * G, (idx // self.nx) * G
+            sy, sx, m = self.rect_mask(x, y, x, y, D.VIA_D + 0.25)
+            self.via_near[sy, sx] |= m
         for u in self.units:
             if u.get('done'):
                 self.stamp(u)
@@ -271,7 +409,7 @@ class Router:
                 heapq.heappush(heap, (h(idx), 0, s))
         moves = ((1, STRAIGHT, 0, 0), (-1, STRAIGHT, 0, 0), (nx, STRAIGHT, 0, 0), (-nx, STRAIGHT, 0, 0),
                  (nx + 1, DIAG, nx, 1), (nx - 1, DIAG, nx, -1), (-nx + 1, DIAG, -nx, 1), (-nx - 1, DIAG, -nx, -1))
-        bias = layer_bias or LAYER_COST
+        bias = layer_bias or (POWER_LAYER_COST if strip(self.net_name[nid]) in D.WIDTHS else LAYER_COST)
         goal = -1
         while heap:
             f, gc, s = heapq.heappop(heap)
@@ -399,17 +537,39 @@ class Router:
             hit = self.rip_all(nid, path) if soft else set()
             self.commit(u, [path], end_vias=[path[-1][1]])
             return True, hit
+        if u['kind'] == 'link':
+            path = self.search(nid, u['src'], targets=set(u['dst']), soft=soft)
+            if path is None:
+                return False, set()
+            hit = self.rip_all(nid, path) if soft else set()
+            self.commit(u, [path])
+            return True, hit
         # tree: connect all pads of the net
         remaining = list(u['pads'])
         first = remaining.pop(0)
-        tree = set(self.pad_cells[first])
+        tree = set(self.terminal_cells(first))
         paths, hits = [], set()
         while remaining:
             targets = {}
             for pi in remaining:
-                for c in self.pad_cells[pi]:
+                for c in self.terminal_cells(pi):
                     targets[c] = pi
-            path = self.search(nid, tree, targets=set(targets), soft=soft)
+            path = None
+            for _ in range(4):
+                path = self.search(nid, tree, targets=set(targets), soft=soft)
+                if path is None:
+                    break
+                vs = [path[k][1] for k in range(len(path) - 1) if path[k][0] != path[k + 1][0]]
+                near = [(a, b) for i_, a in enumerate(vs) for b in vs[i_ + 1:] if a != b and
+                        math.hypot((a % self.nx - b % self.nx) * G, (a // self.nx - b // self.nx) * G) < D.VIA_D + 0.3]
+                if not near:
+                    break
+                for a, b in near:               # discourage hopping layers twice in the same spot
+                    x, y = (b % self.nx) * G, (b // self.nx) * G
+                    sy, sx, m = self.rect_mask(x, y, x, y, 0.6)
+                    for li in range(NL):
+                        self.hist[li][sy, sx] += np.where(m, 200, 0).astype(np.int32)
+                path = None
             if path is None:
                 # partial failure: undo what this unit stamped so far
                 u['done'] = False
@@ -427,6 +587,23 @@ class Router:
                         tree.add((l_, path[k][1]))
             self.commit(u, [path])
         return True, hits
+
+    def terminal_cells(self, pi):
+        """Cells that count as 'this pad': the pad itself plus everything pre-routed to it
+        (other pads of its group and the group's fixed vias on every layer)."""
+        if pi not in self._term:
+            p = self.pads[pi]
+            g = self.find_group(f"{p['ref']}.{p['num']}")
+            cells = list(self.pad_cells[pi])
+            for j, q in enumerate(self.pads):
+                if j != pi and j in self.pad_cells and q['nid'] == p['nid'] and \
+                        self.find_group(f"{q['ref']}.{q['num']}") == g:
+                    cells += self.pad_cells[j]
+            for name, idx in self.fixed_via_names.items():
+                if self.fixed_vias[idx] == p['nid'] and self.find_group(name) == g:
+                    cells += [(l, idx) for l in range(NL)]
+            self._term[pi] = cells
+        return self._term[pi]
 
     def rip_all(self, nid, path):
         """Rip every foreign unit whose copper halo covers the path (repeat: same-net units share claims)."""
@@ -465,6 +642,8 @@ class Router:
         return u
 
     def name(self, u):
+        if u['kind'] == 'link':
+            return f"{self.net_name[u['nid']]}[plane link]"
         pads = ','.join(f"{self.pads[i]['ref']}.{self.pads[i]['num']}" for i in u['pads'][:3])
         return f"{self.net_name[u['nid']]}[{pads}{'…' if len(u['pads']) > 3 else ''}]"
 
@@ -478,60 +657,98 @@ class Router:
             if nid in plane_ids:
                 for i in pads:
                     p = self.pads[i]
-                    if p['drill'] > 0:
-                        continue                       # through-hole pads reach the planes directly
+                    if p['drill'] > 0 or i in self.preconnected:
+                        continue                       # through-hole and pre-routed pads already reach the planes
                     fine = p['ref'] in ('U3', 'U4', 'J1')
-                    self.add_unit('stub', nid, [i], 0 if fine else 1)
+                    self.add_unit('stub', nid, [i], 0 if fine else 1)      # after the signals: stubs can go anywhere
             elif len(pads) > 1:
                 xs = [self.pads[i]['x'] for i in pads]; ys = [self.pads[i]['y'] for i in pads]
                 span = (max(xs) - min(xs)) + (max(ys) - min(ys))
                 name = strip(self.net_name[nid])
-                crit = name.startswith(('USB', 'XIN', 'XOUT', 'QSPI', 'CC')) or name in D.WIDTHS
-                # start each tree from the pad closest to the centroid for shorter branches
-                cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
-                pads = sorted(pads, key=lambda i: abs(self.pads[i]['x'] - cx) + abs(self.pads[i]['y'] - cy))
-                self.add_unit('tree', nid, pads, (2 if crit else 3) + span / 1000.0)
+                crit = name.startswith(('USB', 'XIN', 'XOUT', 'QSPI', 'CC'))
+                power = name in D.WIDTHS
+                # one independent two-pad unit per minimum-spanning-tree edge: a rip-up only costs that edge
+                def dist(a, b):
+                    pa, pb = self.pads[a], self.pads[b]
+                    return abs(pa['x'] - pb['x']) + abs(pa['y'] - pb['y']) + (0 if set(pa['layers']) & set(pb['layers']) else 1.5)
+                def group(i):
+                    return self.find_group(f"{self.pads[i]['ref']}.{self.pads[i]['num']}")
+                inside, rest = [pads[0]], list(pads[1:])
+                while rest:
+                    d, a, b = min(((-1 if group(a) == group(b) else dist(a, b)), a, b) for a in inside for b in rest)
+                    rest.remove(b)
+                    inside.append(b)
+                    if d >= 0:              # pads joined by a pre-route need no unit
+                        # short critical links, then long hauls before short ones, supply trunks after the signals
+                        if os.environ.get('ROUTE_ORDER') == 'short':
+                            prio = (2 if crit or power else 3) + d / 1000.0
+                        elif os.environ.get('ROUTE_ORDER') == 'short2':
+                            prio = (2 if crit else (4 if power else 3)) + d / 1000.0
+                        else:
+                            prio = 0.5 if crit else (4 + d / 1000.0 if power else 3 - d / 1000.0)
+                        self.add_unit('tree', nid, [a, b], prio)
+
+    def try_place(self, u, depth, deadline):
+        """Route u; if it is blocked, rip the units in its way and re-place those too (bounded
+        backtracking).  Either everything involved ends up routed, or the board state is restored."""
+        ok, _ = self.route_unit(u)
+        if ok:
+            return True
+        if depth == 0 or time.time() > deadline:
+            return False
+        for attempt in range(5 if depth > 1 else 3):
+            snap = self.snapshot()
+            ok, ripped = self.route_unit(u, soft=True)
+            if ok:
+                victims = sorted((v for v in self.units if v['uid'] in ripped), key=lambda v: v['prio'])
+                if all(self.try_place(v, depth - 1, deadline) for v in victims):
+                    return True
+            self.restore(snap)          # the congestion history keeps what was learnt, so the next try differs
+            if not ok or time.time() > deadline:
+                break
+        return False
 
     def route_all(self, budget):
-        queue = sorted(self.units, key=lambda u: u['prio'])
         t0 = time.time()
-        failed = []
-        guard = 0
-        while queue:
-            u = queue.pop(0)
-            guard += 1
-            if guard % 40 == 0:
-                done = sum(1 for v in self.units if v['done'])
-                print(f'  … step {guard}: {done}/{len(self.units)} routed, queue {len(queue)}, {time.time() - t0:.0f}s', flush=True)
-            if time.time() - t0 > budget:
-                failed.append(u)
-                continue
+        queue = sorted(self.units, key=lambda u: u['prio'])
+        blocked = []
+        for u in queue:                 # pass A: no rip-up at all
             ok, _ = self.route_unit(u)
-            if ok:
-                continue
-            if u.get('rips', 0) + u.get('softs', 0) > 30:
-                failed.append(u)
-                print('  FAILED', self.name(u), flush=True)
-                continue
-            u['softs'] = u.get('softs', 0) + 1
-            ok, ripped = self.route_unit(u, soft=True)
             if not ok:
-                failed.append(u)
-                print('  FAILED (soft)', self.name(u), flush=True)
-                queue = [v for v in self.units if v['uid'] in ripped] + queue
-                continue
-            if ripped:
-                queue = [v for v in self.units if v['uid'] in ripped] + queue
+                blocked.append(u)
+        print(f'  first pass: {len(blocked)} of {len(queue)} blocked, {time.time() - t0:.0f}s', flush=True)
+        if os.environ.get('ROUTE_HARD_ONLY'):
+            return blocked
+        for rnd in range(3):            # pass B: repair with bounded backtracking
+            still = []
+            for k, u in enumerate(blocked):
+                if self.try_place(u, 2 + rnd, t0 + budget):
+                    continue
+                still.append(u)
+                print(f'  round {rnd + 1}: still blocked {self.name(u)} ({time.time() - t0:.0f}s)', flush=True)
+            if len(still) == len(blocked) or not still:
+                blocked = still
+                break
+            blocked = still
         failed = [u for u in self.units if not u['done']]
         print(f'routing pass: {len(self.units)} units, {len(failed)} failed, {time.time() - t0:.1f}s', flush=True)
         return failed
 
     # ── keep the +3V3 plane (In2) in one piece: bridge islands cut off by borrowed signal tracks ──
     def plane_components(self, li, nid):
-        ZC = 0.2 + 0.1 + 0.05           # zone clearance + half the minimum pour width + margin
+        ZC = 0.2 + 0.1 + 0.02           # zone clearance + half the minimum pour width + margin
         blocked = (self.pad_own[li] == -1)
         blocked = blocked | ((self.pad_own[li] != 0) & (self.pad_own[li] != nid))
         solid = np.zeros((self.ny, self.nx), bool)
+        for (l2, xa, ya, xb, yb, w, n2) in self.fixed_segs:
+            if l2 == li and n2 != nid:
+                sy, sx, m = self.seg_mask(xa, ya, xb, yb, w / 2 + ZC)
+                solid[sy, sx] |= m
+        for idx, n2 in self.fixed_vias.items():
+            if n2 != nid:
+                x, y = (idx % self.nx) * G, (idx // self.nx) * G
+                sy, sx, m = self.rect_mask(x, y, x, y, VIA_R + ZC)
+                solid[sy, sx] |= m
         for u in self.units:
             if not u['done'] or u['nid'] == nid:
                 continue
@@ -563,11 +780,13 @@ class Router:
         return label
 
     def repair_plane(self, net, lname):
+        """Tie plane-net vias that the pour cannot reach (cut off by borrowed tracks) back to the main area."""
         if lname not in LAYERS or net not in self.net_id:
             return 0
         li, nid = LAYERS.index(lname), self.net_id[net]
-        added = 0
-        for _ in range(12):
+        added, gave_up = 0, set()
+        deadline = time.time() + 600
+        for _ in range(int(os.environ.get('ROUTE_BRIDGES', 40))):
             label = self.plane_components(li, nid).ravel()
             comp = {}
             for idx, vn in self.via_at.items():
@@ -577,23 +796,19 @@ class Router:
             if len(comp) <= 1:
                 break
             main = max(comp, key=lambda c: len(comp[c]))
-            islands = sorted((c for c in comp if c != main), key=lambda c: len(comp[c]))
-            c = islands[0]
-            src = comp[c]
-            # nearest via of the main component
-            def pos(i):
-                return (i % self.nx, i // self.nx)
-            best = min(((abs(pos(a)[0] - pos(b)[0]) + abs(pos(a)[1] - pos(b)[1]), a, b) for a in src for b in comp[main]))
-            u = self.add_unit('bridge', nid, [], 9)
-            sources = [(l, best[1]) for l in range(NL)]
-            targets = {(l, b) for b in comp[main] for l in range(NL)}
-            path = self.search(nid, sources, targets=targets)
-            if path is None:
-                print(f'  plane repair: could not bridge a {net} island of {len(src)} via(s)')
-                u['done'] = False
+            islands = [c for c in comp if c != main and min(comp[c]) not in gave_up]
+            if not islands:
                 break
-            self.commit(u, [path])
-            added += 1
+            c = min(islands, key=lambda c: len(comp[c]))
+            u = self.add_unit('link', nid, [], 9)
+            u['src'] = [(l, i) for i in comp[c] for l in range(NL)]
+            u['dst'] = [(l, i) for i in comp[main] for l in range(NL)]
+            if self.try_place(u, 2, deadline):
+                added += 1
+            else:
+                gave_up.add(min(comp[c]))
+                print(f'  plane repair: could not bridge a {net} island of {len(comp[c])} via(s) at '
+                      f'({(comp[c][0] % self.nx) * G:.1f}, {(comp[c][0] // self.nx) * G:.1f})', flush=True)
         return added
 
     def snapshot(self):
@@ -603,10 +818,11 @@ class Router:
         keep = {uid: (segs, vias, done) for uid, segs, vias, done in snap}
         self.units = [self.registry[uid] for uid in keep]
         for u in self.units:
-            u['segs'], u['vias'], u['done'] = keep[u['uid']]
+            segs, vias, done = keep[u['uid']]
+            u['segs'], u['vias'], u['done'] = list(segs), list(vias), done
         self.rebuild_tracks()
 
-    def run(self, passes=4, budget=700):
+    def run(self, passes=int(os.environ.get('ROUTE_PASSES', 4)), budget=int(os.environ.get('ROUTE_BUDGET', 700))):
         self.build_units()
         base_units = list(self.units)
         best = None
@@ -615,7 +831,7 @@ class Router:
             for u in self.units:
                 u['segs'], u['vias'], u['done'], u['rips'], u['softs'] = [], [], False, 0, 0
                 u.pop('tabu', None)
-            self.hist = [np.zeros((self.ny, self.nx), np.int32) for _ in LAYERS]
+            self.hist = [b.copy() for b in self.base_cost]
             self.rebuild_tracks()
             print(f'pass {it + 1}', flush=True)
             failed = self.route_all(budget)
@@ -635,6 +851,11 @@ class Router:
 
     def export(self, path):
         tracks, vias = [], {}
+        for (li, xa, ya, xb, yb, w, nid) in self.fixed_segs:
+            tracks.append(dict(net=self.net_name[nid], layer=LAYERS[li], x1=round(xa, 3), y1=round(ya, 3),
+                               x2=round(xb, 3), y2=round(yb, 3), w=w))
+        for idx, nid in self.fixed_vias.items():
+            vias[idx] = dict(net=self.net_name[nid], x=round((idx % self.nx) * G, 3), y=round((idx // self.nx) * G, 3))
         for u in self.units:
             net = self.net_name[u['nid']]
             for (li, xa, ya, xb, yb, w) in u['segs']:
@@ -647,7 +868,95 @@ class Router:
         print(f'exported {len(tracks)} segments ({length:.0f} mm), {len(vias)} vias')
 
 
+def bridge(pads_json, routes_json, pairs_json, out_json):
+    """Add links between points KiCad reports as unconnected (plane islands), keeping all existing copper."""
+    r = Router(json.load(open(pads_json)))
+    old = json.load(open(routes_json))
+    for t in old['tracks']:
+        nid, li = r.net_id[t['net']], LAYERS.index(t['layer'])
+        sy, sx, m = r.seg_mask(t['x1'], t['y1'], t['x2'], t['y2'], t['w'] / 2 + HALO)
+        r.claim(r.pad_own[li], sy, sx, m, nid)
+        r.fixed_segs.append((li, t['x1'], t['y1'], t['x2'], t['y2'], t['w'], nid))
+    n_fixed = len(r.fixed_segs)
+    for v in old['vias']:
+        nid = r.net_id[v['net']]
+        idx = int(round(v['y'] / G)) * r.nx + int(round(v['x'] / G))
+        r.fixed_vias[idx] = nid
+        sy, sx, m = r.rect_mask(v['x'], v['y'], v['x'], v['y'], VIA_R + HALO)
+        for li in range(NL):
+            r.claim(r.pad_own[li], sy, sx, m, nid)
+    r.hist = [b.copy() for b in r.base_cost]
+    r.rebuild_tracks()
+    added = 0
+    for pr in json.load(open(pairs_json)):
+        nid = r.net_id[pr['net']]
+        ends = []
+        for e in (pr['a'], pr['b']):
+            idx = int(round(e['y'] / G)) * r.nx + int(round(e['x'] / G))
+            layers = range(NL) if e['layer'] == '*' else [LAYERS.index(e['layer'])]
+            hard, _ = r.passable(nid)
+            ends.append([(l, idx) for l in layers if hard[l].flat[idx]])
+        if not ends[0] or not ends[1]:
+            print('  bridge: endpoint not routable', pr)
+            continue
+        u = r.add_unit('bridge', nid, [], 9)
+        path = r.search(nid, ends[0], targets=set(ends[1]))
+        if path is not None:
+            r.commit(u, [path])
+            added += 1
+            continue
+        for k in (0, 1):                # no direct path: tie each end (and the vias next to it) to the rest of the net
+            ex, ey = ends[k][0][1] % r.nx, ends[k][0][1] // r.nx
+            far = {(l, i) for i, n in r.via_at.items() if n == nid and
+                   math.hypot(i % r.nx - ex, i // r.nx - ey) * G > 3.0 for l in range(NL)}
+            near = [(l, i) for i, n in r.via_at.items() if n == nid and
+                    math.hypot(i % r.nx - ex, i // r.nx - ey) * G <= 1.5 for l in range(NL)]
+            path = r.search(nid, list(ends[k]) + near, targets=far) if far else None
+            if path is None:
+                print('  bridge: no path from', pr['a' if k == 0 else 'b'])
+                continue
+            u = r.add_unit('bridge', nid, [], 9)
+            r.commit(u, [path])
+            added += 1
+    # the GND plane (In1) may have been cut by borrowed tracks: tie stranded GND vias back to the main area
+    for net, lname in D.PLANES.items():
+        if os.environ.get('BRIDGE_PLANES') and lname in LAYERS and net in r.net_id:
+            li, nid = LAYERS.index(lname), r.net_id[net]
+            for _ in range(25):
+                label = r.plane_components(li, nid).ravel()
+                comp = {}
+                for idx, vn in r.via_at.items():
+                    if vn == nid:
+                        comp.setdefault(int(label[idx]), []).append(idx)
+                comp.pop(0, None)
+                if len(comp) <= 1:
+                    break
+                main = max(comp, key=lambda c: len(comp[c]))
+                c = min((c for c in comp if c != main), key=lambda c: len(comp[c]))
+                u = r.add_unit('bridge', nid, [], 9)
+                path = r.search(nid, [(l, i) for i in comp[c] for l in range(NL)],
+                                targets={(l, i) for i in comp[main] for l in range(NL)})
+                if path is None:
+                    print(f'  plane bridge: no path for a {net} island of {len(comp[c])} via(s)')
+                    break
+                r.commit(u, [path])
+                added += 1
+    tracks, vias = list(old['tracks']), {(v['x'], v['y']): v for v in old['vias']}
+    for u in r.units:
+        net = r.net_name[u['nid']]
+        for (li, xa, ya, xb, yb, w) in u['segs']:
+            tracks.append(dict(net=net, layer=LAYERS[li], x1=round(xa, 3), y1=round(ya, 3), x2=round(xb, 3), y2=round(yb, 3), w=w))
+        for idx in u['vias']:
+            x, y = round((idx % r.nx) * G, 3), round((idx // r.nx) * G, 3)
+            vias[(x, y)] = dict(net=net, x=x, y=y)
+    json.dump(dict(tracks=tracks, vias=list(vias.values())), open(out_json, 'w'))
+    print(f'bridge: {added} link(s) added')
+
+
 if __name__ == '__main__':
+    if sys.argv[1] == '--bridge':
+        bridge(*sys.argv[2:6])
+        sys.exit(0)
     r = Router(json.load(open(sys.argv[1])))
     failed = r.run()
     r.export(sys.argv[2])

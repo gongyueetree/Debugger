@@ -239,13 +239,14 @@ def finish(in_pcb, routes_json, out_pcb):
     bot = ['GND', 'IO5', 'IO6', 'IO7', 'GND', 'A1', 'A2', '5V']
     for y, s in zip(rows, top):
         text(board, s, xl, y, F, 0.8, justify='right')
-    for y, s in zip(rows, bot):
-        text(board, s, xl, y, B, 0.8, justify='left')
+    for k, (y, s) in enumerate(zip(rows, bot)):
+        if k not in (4, 5, 6):          # U14 / D11 sit where these labels would go (the tray carries the legend)
+            text(board, s, xl, y, B, 0.8, justify='left')
     text(board, 'BOOT', 11.0, 16.9, F, 0.7)
     text(board, 'EXT', 31.0, 3.6, F, 0.7)
     text(board, 'INT', 41.2, 3.0, F, 0.7)
     text(board, 'LA_RP2040 V2', 23.5, 19.6, F, 1.0, thick=0.16)
-    text(board, 'eetree.cn', 16.2, 19.8, F, 0.7)
+    text(board, 'eetree.cn', 23.5, 18.1, F, 0.7)
     text(board, 'LA_RP2040 V2.0  2026-11', 15.0, 19.9, B, 0.8)
     text(board, 'IO 1.65-5.5V  A0-A2 0-3.3V', 12.0, 1.2, B, 0.8)
     text(board, 'RUN', 26.6, 1.3, B, 0.7); text(board, 'SWC', 28.9, 1.3, B, 0.7); text(board, 'SWD', 31.2, 1.3, B, 0.7)

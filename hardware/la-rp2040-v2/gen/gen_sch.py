@@ -180,8 +180,9 @@ class Sheet:
             x0 = min(bx) - 0.6
             rp = prop('Reference', c['ref'], x0, min(by) - 1.0, 0, ['right', 'bottom'])
             vp = prop('Value', c['value'], x0, max(by) + 1.0, 0, ['right', 'top'])
+        in_bom = 'no' if c['ref'].startswith(('H', 'TP')) else 'yes'
         inst = ['symbol', ['lib_id', Q(c['sym'])], ['at', r2(X), r2(Y), R], ['unit', 1],
-                ['exclude_from_sim', 'no'], ['in_bom', 'yes'], ['on_board', 'yes'], ['dnp', 'no'],
+                ['exclude_from_sim', 'no'], ['in_bom', in_bom], ['on_board', 'yes'], ['dnp', 'no'],
                 ['uuid', uid('sym', c['ref'])], rp, vp,
                 prop('Footprint', c['fp'], X, Y, hide=True), prop('Datasheet', '', X, Y, hide=True),
                 prop('MPN', c['mpn'], X, Y, hide=True), prop('Description', c['desc'], X, Y, hide=True)]

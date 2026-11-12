@@ -87,12 +87,13 @@ MX, MY = 21.0, 9.6     # RP2040 centre on the PCB (on the 0.1 mm routing grid)
 comp('U3', 'MCU_RaspberryPi:RP2040', 'RP2040', 'Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm',
      {1: '+3V3', 10: '+3V3', 22: '+3V3', 33: '+3V3', 42: '+3V3', 49: '+3V3', 44: '+3V3', 48: '+3V3',
       43: 'ADC_AVDD', 45: '+1V1', 23: '+1V1', 50: '+1V1', 57: 'GND', 19: 'GND',
-      2: 'DIR0', 3: 'DIR1', 4: 'LED_USB', 5: 'DIR2', 6: 'IO3_A', 7: 'IO4_A', 8: 'DIR7', 9: 'LED_RX',
-      11: 'LED_TX', 12: 'DIR4', 13: 'DIR5', 14: 'DIR6',
+      # bottom side of the QFN as placed: only the pins the official firmware fixes, plus two DIR lines
+      2: None, 3: None, 4: 'LED_USB', 5: None, 6: 'IO3_A', 7: 'IO4_A', 8: None, 9: 'LED_RX',
+      11: 'LED_TX', 12: 'DIR4', 13: 'DIR567', 14: None,
       15: 'IO0_A', 16: 'IO1_A', 17: 'SWDIO_O', 18: 'LED_DAP',
       20: 'XIN', 21: 'XOUT', 24: 'MCU_SWCLK', 25: 'MCU_SWDIO', 26: 'RUN',
-      27: 'LED_ACT', 28: 'DIR3',
-      29: 'IO0_A', 30: 'IO1_A', 31: 'IO2_A', 32: 'IO3_A', 34: 'IO4_A', 35: 'IO5_A', 36: 'IO6_A', 37: 'IO7_A',
+      27: 'LED_ACT', 28: None,
+      29: 'DIR0', 30: 'DIR1', 31: 'IO2_A', 32: 'DIR2', 34: 'DIR3', 35: 'IO5_A', 36: 'IO6_A', 37: 'IO7_A',
       38: 'ADC0', 39: 'ADC1', 40: 'ADC2', 41: 'VIO_SENSE',
       46: 'USB_DM', 47: 'USB_DP',
       51: 'QSPI_SD3', 52: 'QSPI_SCLK', 53: 'QSPI_SD0', 54: 'QSPI_SD2', 55: 'QSPI_SD1', 56: 'QSPI_SS'},
@@ -100,19 +101,19 @@ comp('U3', 'MCU_RaspberryPi:RP2040', 'RP2040', 'Package_DFN_QFN:QFN-56-1EP_7x7mm
 
 # decoupling (bottom side, under/around the QFN)
 p = col(104.14, 104.14)
-C('C4', '100nF', '+3V3', 'GND', (20.0, 11.13, 180, 'B'), next(p))
-C('C5', '100nF', '+3V3', 'GND', (22.0, 11.13, 0, 'B'), next(p))
-C('C6', '100nF', '+3V3', 'GND', (22.0, 10.11, 0, 'B'), next(p))
-C('C7', '100nF', '+3V3', 'GND', (22.0, 8.07, 0, 'B'), next(p))
-C('C8', '100nF', '+3V3', 'GND', (14.0, 5.9, 0, 'B'), next(p))
-C('C9', '100nF', '+3V3', 'GND', (20.0, 9.09, 180, 'B'), next(p))
-C('C12', '1uF', '+3V3', 'GND', (16.3, 5.9, 0, 'B'), next(p))
+C('C4', '100nF', '+3V3', 'GND', (16.8, 13.6, 0, 'B'), next(p))
+C('C5', '100nF', '+3V3', 'GND', (22.0, 14.5, 0, 'B'), next(p))
+C('C6', '100nF', '+3V3', 'GND', (22.0, 10.0, 180, 'B'), next(p))
+C('C7', '100nF', '+3V3', 'GND', (22.0, 4.9, 0, 'B'), next(p))
+C('C8', '100nF', '+3V3', 'GND', (16.6, 5.7, 0, 'B'), next(p))
+C('C9', '100nF', '+3V3', 'GND', (17.3, 9.2, 180, 'B'), next(p))
+C('C12', '1uF', '+3V3', 'GND', (17.3, 7.2, 180, 'B'), next(p))
 p = col(142.24, 104.14)
-C('C10', '100nF', '+1V1', 'GND', (22.0, 9.09, 0, 'B'), next(p))
-C('C11', '100nF', '+1V1', 'GND', (20.0, 10.11, 180, 'B'), next(p))
-C('C13', '1uF', '+1V1', 'GND', (20.0, 8.07, 180, 'B'), next(p))
-C('C14', '1uF', 'ADC_AVDD', 'GND', (16.3, 4.7, 0, 'B'), next(p))
-R('R65', '10', '+3V3', 'ADC_AVDD', (14.0, 4.7, 0, 'B'), next(p))
+C('C10', '100nF', '+1V1', 'GND', (22.0, 8.9, 180, 'B'), next(p))
+C('C11', '100nF', '+1V1', 'GND', (20.0, 10.0, 0, 'B'), next(p))
+C('C13', '1uF', '+1V1', 'GND', (20.0, 8.0, 0, 'B'), next(p))
+C('C14', '1uF', 'ADC_AVDD', 'GND', (15.6, 6.6, 0, 'F'), next(p))
+R('R65', '10', '+3V3', 'ADC_AVDD', (15.6, 5.5, 0, 'F'), next(p))
 R('R9', '10k', '+3V3', 'RUN', (26.3, 7.5, 0, 'B'), next(p))
 
 # crystal
@@ -156,7 +157,9 @@ for i, (d, r, net, colour, _) in enumerate(LEDS):
 # IOn: connector pin ─ TVS ─ series R ─ B|74LVC1T45|A ─ RP2040.  VCCB = VIO.
 XT = 45.0               # top-side translator column
 ROWS = [1.61 + 2.54 * k for k in range(8)]      # J2 pad rows (y)
-CY = [3.6 + 3.3 * k for k in range(5)]          # translator rows
+CY = [3.6 + 3.3 * k for k in range(5)]          # top-side translator rows
+BY = [4.4 + 3.3 * k for k in range(4)]          # bottom-side translator rows
+XB = 39.0                                       # bottom-side translator column
 
 
 def lvc(ref, a, b, d, pcb, sch):
@@ -169,23 +172,23 @@ SX = (281.94, 327.66, 373.38)
 SY = (45.72, 86.36, 127.0)
 lvc('U5', 'IO0_A', 'IO0_B', 'DIR0', (XT, CY[0], 0, 'F'), (SX[0], SY[0]))
 lvc('U6', 'SWDIO_O', 'IO1_BO', 'DIR1', (XT, CY[1], 0, 'F'), (SX[1], SY[0]))
-lvc('U7', 'IO1_A', 'IO1_BI', 'GND', (40.6, CY[1], 0, 'F'), (SX[2], SY[0]))
+lvc('U7', 'IO1_A', 'IO1_BI', 'GND', (XB, BY[3], 0, 'B'), (SX[2], SY[0]))
 lvc('U8', 'IO2_A', 'IO2_B', 'DIR2', (XT, CY[2], 0, 'F'), (SX[0], SY[1]))
 lvc('U9', 'IO3_A', 'IO3_B', 'DIR3', (XT, CY[3], 0, 'F'), (SX[1], SY[1]))
 lvc('U10', 'IO4_A', 'IO4_B', 'DIR4', (XT, CY[4], 0, 'F'), (SX[2], SY[1]))
-lvc('U11', 'IO5_A', 'IO5_B', 'DIR5', (40.2, CY[0], 0, 'B'), (SX[0], SY[2]))
-lvc('U12', 'IO6_A', 'IO6_B', 'DIR6', (40.2, CY[1], 0, 'B'), (SX[1], SY[2]))
-lvc('U13', 'IO7_A', 'IO7_B', 'DIR7', (40.2, CY[2], 0, 'B'), (SX[2], SY[2]))
+lvc('U11', 'IO5_A', 'IO5_B', 'DIR567', (XB, BY[0], 0, 'B'), (SX[0], SY[2]))
+lvc('U12', 'IO6_A', 'IO6_B', 'DIR567', (XB, BY[1], 0, 'B'), (SX[1], SY[2]))
+lvc('U13', 'IO7_A', 'IO7_B', 'DIR567', (XB, BY[2], 0, 'B'), (SX[2], SY[2]))
 
 PX = (271.78, 309.88, 347.98, 386.08)
 p = col(PX[0], 154.94)
 # series resistors (470R on the SWDIO driver: lets the stock firmware share the line without a DIR signal)
-R('R20', '100', 'IO0_B', 'IO0', (48.6, ROWS[1], 0, 'F'), next(p))
-R('R21', '470', 'IO1_BO', 'IO1', (48.6, ROWS[2], 0, 'F'), next(p))
-R('R22', '100', 'IO1_BI', 'IO1', (48.6, ROWS[2] + 1.27, 0, 'F'), next(p))
-R('R23', '100', 'IO2_B', 'IO2', (48.6, ROWS[3], 0, 'F'), next(p))
-R('R24', '100', 'IO3_B', 'IO3', (48.6, ROWS[4], 0, 'F'), next(p))
-R('R25', '100', 'IO4_B', 'IO4', (48.6, ROWS[5], 0, 'F'), next(p))
+R('R20', '100', 'IO0_B', 'IO0', (48.6, CY[0] + 0.65, 0, 'F'), next(p))
+R('R21', '470', 'IO1_BO', 'IO1', (48.6, CY[1] + 0.65, 0, 'F'), next(p))
+R('R22', '100', 'IO1_BI', 'IO1', (48.6, CY[1] + 1.95, 0, 'F'), next(p))
+R('R23', '100', 'IO2_B', 'IO2', (48.6, CY[2] + 0.65, 0, 'F'), next(p))
+R('R24', '100', 'IO3_B', 'IO3', (48.6, CY[3] + 0.65, 0, 'F'), next(p))
+R('R25', '100', 'IO4_B', 'IO4', (48.6, CY[4] + 0.65, 0, 'F'), next(p))
 R('R26', '100', 'IO5_B', 'IO5', (48.6, ROWS[1], 0, 'B'), next(p))
 R('R27', '100', 'IO6_B', 'IO6', (48.6, ROWS[2], 0, 'B'), next(p))
 R('R28', '100', 'IO7_B', 'IO7', (48.6, ROWS[3], 0, 'B'), next(p))
@@ -193,49 +196,53 @@ R('R28', '100', 'IO7_B', 'IO7', (48.6, ROWS[3], 0, 'B'), next(p))
 # DIR defaults: high = probe drives the pin (A→B), low = input (B→A)
 p = col(PX[1], 154.94)
 DIRS = (('R30', 'DIR0', '+3V3'), ('R31', 'DIR1', '+3V3'), ('R32', 'DIR2', 'GND'), ('R33', 'DIR3', '+3V3'),
-        ('R34', 'DIR4', 'GND'), ('R35', 'DIR5', 'GND'), ('R36', 'DIR6', 'GND'), ('R37', 'DIR7', 'GND'))
+        ('R34', 'DIR4', 'GND'), ('R35', 'DIR567', 'GND'))
+# each DIR resistor sits at its translator's DIR via: IO0..IO4 under the top-side chips, IO5..IO7 beside the bottom ones
+DIR_POS = [(47.0, CY[0] + 1.2, 90, 'B'), (47.0, CY[1] + 1.2, 90, 'B'), (47.0, CY[2] + 1.2, 90, 'B'),
+           (47.0, CY[3] + 1.2, 90, 'B'), (47.0, CY[4] + 1.2, 90, 'B'),
+           (42.6, BY[0], 180, 'B'), (42.6, BY[1], 180, 'B'), (42.6, BY[2], 180, 'B')]
 for i, (ref, net, rail) in enumerate(DIRS):
-    R(ref, '10k', rail, net, (18.4 + 1.6 * i, 16.9, 90, 'F'), next(p))
+    R(ref, '10k', rail, net, DIR_POS[i], next(p))
 
 # A-side idle levels (define the bus while firmware has not configured the pins or VIO is absent)
 p = col(PX[2], 154.94)
-R('R40', '100k', 'IO0_A', 'GND', (33.0, 9.7, 0, 'B'), next(p))
-R('R41', '10k', '+3V3', 'SWDIO_O', (33.0, 11.1, 0, 'B'), next(p))
-R('R42', '100k', '+3V3', 'IO1_A', (33.0, 12.5, 0, 'B'), next(p))
-R('R43', '100k', '+3V3', 'IO3_A', (35.8, 5.5, 0, 'B'), next(p))
-R('R44', '100k', '+3V3', 'IO4_A', (35.8, 6.9, 0, 'B'), next(p))
+R('R40', '100k', 'IO0_A', 'GND', (34.0, 5.6, 0, 'F'), next(p))
+R('R41', '10k', '+3V3', 'SWDIO_O', (34.0, 7.0, 0, 'F'), next(p))
+R('R42', '100k', '+3V3', 'IO1_A', (34.0, 8.4, 0, 'F'), next(p))
+R('R43', '100k', '+3V3', 'IO3_A', (34.0, 9.8, 0, 'F'), next(p))
+R('R44', '100k', '+3V3', 'IO4_A', (34.0, 11.2, 0, 'F'), next(p))
 
 # target-side idle levels
 PULLS = (('R50', 'IO0', 'GND'), ('R51', 'IO1', 'VIO'), ('R52', 'IO2', 'VIO'), ('R53', 'IO3', 'VIO'),
          ('R54', 'IO4', 'VIO'), ('R55', 'IO5', 'GND'), ('R56', 'IO6', 'GND'), ('R57', 'IO7', 'GND'))
 for i, (ref, net, rail) in enumerate(PULLS[:4]):
-    R(ref, '100k', rail, net, (44.0 + 1.6 * i, 1.9, 90, 'B'), next(p))
+    R(ref, '100k', rail, net, (43.6 + 1.6 * i, 1.5, 90, 'B'), next(p))
 p = col(PX[3], 154.94)
 for i, (ref, net, rail) in enumerate(PULLS[4:]):
-    R(ref, '100k', rail, net, (37.8 + 1.6 * i, 16.3, 90, 'B'), next(p))
+    R(ref, '100k', rail, net, (37.4 + 1.6 * i, 18.4, 90, 'B'), next(p))
 
 # translator decoupling
 C('C20', '100nF', '+3V3', 'GND', (44.1, 5.25, 90, 'B'), next(p))
 C('C21', '100nF', '+3V3', 'GND', (44.1, 11.85, 90, 'B'), next(p))
-C('C22', '100nF', '+3V3', 'GND', (44.1, 16.8, 90, 'B'), next(p))
-C('C23', '100nF', '+3V3', 'GND', (38.1, 6.9, 90, 'F'), next(p))
-C('C24', '100nF', '+3V3', 'GND', (42.7, 8.4, 90, 'B'), next(p))
+C('C22', '100nF', '+3V3', 'GND', (44.1, 15.15, 90, 'B'), next(p))
+C('C23', '100nF', '+3V3', 'GND', (35.6, 12.6, 0, 'B'), next(p))
+C('C24', '100nF', '+3V3', 'GND', (35.6, 6.0, 0, 'B'), next(p))
 p = col(PX[0], 228.6)
 C('C25', '100nF', 'VIO', 'GND', (45.9, 5.25, 90, 'B'), next(p))
 C('C26', '100nF', 'VIO', 'GND', (45.9, 11.85, 90, 'B'), next(p))
-C('C27', '100nF', 'VIO', 'GND', (45.9, 16.8, 90, 'B'), next(p))
+C('C27', '100nF', 'VIO', 'GND', (45.9, 15.15, 90, 'B'), next(p))
 p = col(PX[1], 228.6)
-C('C28', '100nF', 'VIO', 'GND', (37.0, 6.9, 90, 'F'), next(p))
-C('C29', '100nF', 'VIO', 'GND', (42.7, 4.8, 90, 'B'), next(p))
+C('C28', '100nF', 'VIO', 'GND', (42.6, 14.9, 0, 'B'), next(p))
+C('C29', '100nF', 'VIO', 'GND', (42.6, 8.15, 0, 'B'), next(p))
 C('C30', '1uF', 'VIO', 'GND', (44.4, 1.6, 0, 'F'), next(p))
 
 # ESD arrays on the target-side nets
 comp('U14', 'Power_Protection:SRV05-4', 'SRV05-4', 'Package_TO_SOT_SMD:SOT-23-6',
      {1: 'IO0', 3: 'IO1', 4: 'IO2', 6: 'IO3', 2: 'GND', 5: None},
-     (49.2, 12.0, 90, 'B'), (127.0, 198.12, 0), mpn='SRV05-4 (SOT-23-6)', desc='4-line 5 V TVS array')
+     (50.8, 12.0, 90, 'B'), (127.0, 198.12, 0), mpn='SRV05-4 (SOT-23-6)', desc='4-line 5 V TVS array')
 comp('U15', 'Power_Protection:SRV05-4', 'SRV05-4', 'Package_TO_SOT_SMD:SOT-23-6',
      {1: 'IO4', 3: 'IO5', 4: 'IO6', 6: 'IO7', 2: 'GND', 5: None},
-     (40.6, 13.4, 0, 'B'), (127.0, 238.76, 0), mpn='SRV05-4 (SOT-23-6)', desc='4-line 5 V TVS array')
+     (33.6, 16.0, 0, 'B'), (127.0, 238.76, 0), mpn='SRV05-4 (SOT-23-6)', desc='4-line 5 V TVS array')
 
 # ═════════════════════ VIO (target reference voltage) ══════════════════════
 comp('D6', 'Device:D_Schottky', 'B5819WS', SOD323, {2: '+3V3', 1: 'VIO_F'},
@@ -255,14 +262,14 @@ C('C31', '100nF', 'VIO_SENSE', 'GND', (33.0, 8.3, 0, 'B'), (226.06, 243.84))
 comp('D8', 'Device:D_Schottky', 'B5819WS', SOD323, {2: '+5V', 1: '5V_F'},
      (44.6, 19.8, 0, 'B'), (226.06, 251.46, 0), mpn='B5819WS (SOD-323)', desc='Blocks back-feed into USB VBUS')
 comp('F3', 'Device:Polyfuse', '350mA', 'Fuse:Fuse_0603_1608Metric', {1: '5V_F', 2: '5V_OUT'},
-     (48.8, 19.6, 0, 'B'), (226.06, 259.08, 90), mpn='0603 PTC 0.35A hold / 6V', desc='Limits current on the 5 V pin')
+     (49.1, 19.7, 0, 'B'), (226.06, 259.08, 90), mpn='0603 PTC 0.35A hold / 6V', desc='Limits current on the 5 V pin')
 comp('D9', 'Device:D_TVS', '5V', SOD323, {1: '5V_OUT', 2: 'GND'}, (48.6, 19.4, 0, 'F'), (226.06, 266.7, 0),
      mpn='PESD5V0S1BA (SOD-323)', desc='5 V pin ESD clamp')
 
 # ═════════════════════════════ analog inputs ═══════════════════════════════
-ADC = (('R62', 'D10', 'AIN0', 'ADC0', (48.6, ROWS[6], 0, 'F'), (45.0, 19.45, 0, 'F')),
-       ('R63', 'D11', 'AIN1', 'ADC1', (49.6, 15.0, 0, 'B'), (45.0, 14.3, 0, 'B')),
-       ('R64', 'D12', 'AIN2', 'ADC2', (49.6, ROWS[6], 0, 'B'), (39.6, 18.9, 0, 'B')))
+ADC = (('R62', 'D10', 'AIN0', 'ADC0', (48.6, 16.1, 0, 'F'), (45.0, 19.45, 180, 'F')),
+       ('R63', 'D11', 'AIN1', 'ADC1', (49.6, 15.0, 0, 'B'), (51.9, 17.0, 90, 'B')),
+       ('R64', 'D12', 'AIN2', 'ADC2', (49.6, ROWS[6], 0, 'B'), (34.8, 19.2, 0, 'B')))
 for i, (r, d, ain, adc, rp, dp) in enumerate(ADC):
     R(r, '2.2k', ain, adc, rp, (147.32, 266.7 + 7.62 * i))
     comp(d, 'Diode:BAT54SW', 'BAT54SW', 'Package_TO_SOT_SMD:SOT-323_SC-70', {1: 'GND', 2: '+3V3', 3: adc},
@@ -290,6 +297,37 @@ DEFAULT_WIDTH = 0.15
 CLEARANCE = 0.15
 VIA_D, VIA_DRILL = 0.55, 0.3
 
+# Hand-placed fan-out for the RP2040 supply pins (board-local mm, on the 0.1 mm grid).  The space between
+# the QFN pad ring and its exposed pad only fits a few vias, so they are assigned here instead of being
+# left to the autorouter.  Endpoints are 'REF.PIN', a via name, or an (x, y) point.
+PRE_VIAS = {
+    'V44': ('+3V3', MX - 2.4, MY - 2.4), 'V45': ('+1V1', MX - 2.4, MY - 1.6), 'V48': ('+3V3', MX - 2.4, MY - 0.4),
+    'V50': ('+1V1', MX - 2.4, MY + 0.4), 'V22': ('+3V3', MX + 2.4, MY + 0.2), 'V23': ('+1V1', MX + 2.4, MY - 0.8),
+    'V33': ('+3V3', MX + 1.0, MY - 2.4), 'V1': ('+3V3', MX - 2.4, MY + 2.4), 'V10': ('+3V3', MX + 1.0, MY + 2.4),
+    'G1': ('GND', MX, MY - 2.4), 'G2': ('GND', MX, MY + 1.3),
+}
+PRE_LINKS = [
+    # top side: pin → via between the pad ring and the exposed pad
+    ('+3V3', 'F.Cu', 'U3.44', 'V44', 0.2), ('+3V3', 'F.Cu', 'U3.42', 'V44', 0.2), ('+1V1', 'F.Cu', 'U3.45', 'V45', 0.2),
+    ('+3V3', 'F.Cu', 'U3.48', 'V48', 0.2), ('+3V3', 'F.Cu', 'U3.49', 'V48', 0.2), ('+1V1', 'F.Cu', 'U3.50', 'V50', 0.2),
+    ('+3V3', 'F.Cu', 'U3.22', 'V22', 0.2), ('+1V1', 'F.Cu', 'U3.23', 'V23', 0.2), ('+3V3', 'F.Cu', 'U3.33', 'V33', 0.2),
+    ('+3V3', 'F.Cu', 'U3.1', 'V1', 0.2), ('+3V3', 'F.Cu', 'U3.10', 'V10', 0.2),
+    ('GND', 'F.Cu', 'U3.19', (MX + 1.2, MY + 1.0), 0.2),            # TESTEN straight into the exposed pad
+    # bottom side: via → decoupling capacitor under the chip
+    ('+3V3', 'B.Cu', 'V44', 'C12.1', 0.25), ('+3V3', 'B.Cu', 'V48', 'C9.1', 0.25),
+    ('+1V1', 'B.Cu', 'V45', 'C13.1', 0.25), ('+1V1', 'B.Cu', 'V50', 'C11.1', 0.25), ('+1V1', 'B.Cu', 'C13.1', 'C11.1', 0.25),
+    ('+1V1', 'B.Cu', 'V23', 'C10.1', 0.25), ('+3V3', 'B.Cu', 'V22', 'C6.1', 0.25),
+    ('GND', 'B.Cu', 'C13.2', 'G1', 0.25), ('GND', 'B.Cu', 'C10.2', 'G1', 0.25),
+    ('GND', 'B.Cu', 'C11.2', 'G2', 0.25), ('GND', 'B.Cu', 'C6.2', 'G2', 0.25),
+    # +1V1 from the regulator side (pins 45/50) across to pin 23, on the inner layer under the exposed pad
+    ('+1V1', 'In2.Cu', 'V45', (MX + 1.5, MY - 1.6), 0.25), ('+1V1', 'In2.Cu', (MX + 1.5, MY - 1.6), 'V23', 0.25),
+]
+# Level translators get the same treatment: supply and DIR vias sit 2.2 mm either side of the chip.
+TRANSLATOR_VIA_DX = 2.2
+PRE_LINKS += [(net, 'B.Cu', f'{u}.v5', f'{r}.2', 0.2) for net, u, r in
+              (('DIR0', 'U5', 'R30'), ('DIR1', 'U6', 'R31'), ('DIR2', 'U8', 'R32'), ('DIR3', 'U9', 'R33'),
+               ('DIR4', 'U10', 'R34'), ('DIR567', 'U11', 'R35'))]
+
 SCH_NOTES = [
     (15.24, 20.32, 2.5, 'USB-C INPUT / POWER'),
     (15.24, 96.52, 2.5, 'QSPI FLASH / BOOTSEL / CRYSTAL / MCU DECOUPLING'),
@@ -300,7 +338,7 @@ SCH_NOTES = [
     (109.22, 181.61, 2.5, 'TARGET CONNECTOR / ESD'),
     (167.64, 220.98, 2.5, 'VIO SELECT / SENSE / +5V OUT'),
     (15.24, 251.46, 2.5, 'ANALOG INPUT CLAMPS (0..3.3 V)'),
-    (259.08, 24.13, 1.5, 'IO0=SWCLK(GP12|GP18)  IO1=SWDIO(out GP14, in GP13|GP19)  IO2=nRESET(GP20)'),
-    (259.08, 27.305, 1.5, 'IO3=UART TX(GP4|GP21)  IO4=UART RX(GP5|GP22)  IO5..IO7=GP23..GP25  LA D0..D7=GP18..GP25'),
+    (259.08, 24.13, 1.5, 'IO0=SWCLK(GP12)  IO1=SWDIO(out GP14, in GP13)  IO2=nRESET(GP20)  IO3=UART TX(GP4)  IO4=UART RX(GP5)'),
+    (259.08, 27.305, 1.5, 'IO5..IO7=GP23..GP25   DIR0..DIR4=GP18,GP19,GP21,GP22,GP9   DIR5-7 (shared)=GP10'),
     (15.24, 24.13, 1.5, 'CC1/CC2 each have their own 5.1k Rd (0402, 1%) so USB-C to USB-C hosts enable VBUS.'),
 ]

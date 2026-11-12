@@ -7,13 +7,13 @@ from PIL import Image, ImageDraw
 d = json.load(open(sys.argv[1])); r = json.load(open(sys.argv[2]))
 S = float(sys.argv[4]) if len(sys.argv) > 4 else 28
 L, W = d['board']['L'], d['board']['W']
-img = Image.new('RGB', (int(L * S) + 20, int(3 * W * S) + 60), 'white')
+img = Image.new('RGB', (int(L * S) + 20, int(4 * W * S) + 80), 'white')
 dr = ImageDraw.Draw(img)
-for k, layer in enumerate(('F.Cu', 'B.Cu', 'In2.Cu')):
+for k, layer in enumerate(('F.Cu', 'B.Cu', 'In2.Cu', 'In1.Cu')):
     oy = 10 + k * (W * S + 20)
     T = lambda x, y: (10 + x * S, oy + y * S)
     dr.rectangle([T(0, 0), T(L, W)], outline='black')
-    col = ((200, 40, 40), (40, 80, 200), (150, 0, 150))[k]
+    col = ((200, 40, 40), (40, 80, 200), (150, 0, 150), (0, 130, 130))[k]
     routed = {(round(t['x1'], 1), round(t['y1'], 1)) for t in r['tracks']} | {(round(t['x2'], 1), round(t['y2'], 1)) for t in r['tracks']}
     for p in d['pads']:
         if layer in p['layers'] or p['npth']:
