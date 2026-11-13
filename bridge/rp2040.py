@@ -9,6 +9,30 @@ import io, math, struct, time, zipfile
 LOGIC_PRODUCT = 'LA-RP2040 SUMP8 v1'
 ADC_PRODUCT = 'LA-RP2040 ADC12 v1'
 DAP_PRODUCT = 'LA-RP2040 CMSIS-DAP'
+# Hardware revisions.  V1 wires GP20..GP28 straight to a 2x6 header; V2 is level-shifted, uses the official
+# Debug Probe pin map and brings IO0..IO7 in on non-contiguous GPIOs (see hardware/la-rp2040-v2).
+BOARDS = {
+    'v1': dict(name='LA_RP2040', products={'cmsis-dap': DAP_PRODUCT, 'sump8': LOGIC_PRODUCT, 'adc12': ADC_PRODUCT},
+               logic_gpio=(20, 21, 22, 23, 24, 25, 26, 27), logic_max=100000),
+    'v2': dict(name='LA_RP2040 V2', products={'cmsis-dap': 'LA-RP2040 V2 CMSIS-DAP', 'sump8': 'LA-RP2040 V2 SUMP8 v1',
+                                               'adc12': 'LA-RP2040 V2 ADC12 v1'},
+               logic_gpio=(12, 13, 20, 4, 5, 23, 24, 25), logic_max=50000),
+}
+PRODUCTS = {product: (board, kind) for board, b in BOARDS.items() for kind, product in b['products'].items()}
+# The stock Raspberry Pi firmware runs unmodified on V2 (same SWD / UART pins, no target reset).
+STOCK_DEBUG_PROBE = 'Debug Probe (CMSIS-DAP)'
+
+
+def board_of(product):
+    """Board revision implied by a USB product string, or '' when it is not one of this project's builds."""
+    if product in PRODUCTS:
+        return PRODUCTS[product][0]
+    return 'v2' if product == STOCK_DEBUG_PROBE else ''
+
+
+def logic_names(board='v1'):
+    return [f'D{i}_GP{gpio}' for i, gpio in enumerate(BOARDS[board if board in BOARDS else 'v1']['logic_gpio'])]
+
 LOGIC_RATES = (100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000)
 ADC_RATES = (10000, 20000, 50000, 100000, 200000, 250000, 500000)
 
@@ -16,10 +40,12 @@ ADC_RATES = (10000, 20000, 50000, 100000, 200000, 250000, 500000)
 def profile(pid, product):
     if pid == 0x000c:
         return 4, 'cmsis-dap', 'RP2040 · CMSIS-DAP + UART'
-    if pid == 0x000a and product == LOGIC_PRODUCT:
-        return 5, 'sump8', 'LA-RP2040 · 8 通道逻辑分析仪'
-    if pid == 0x000a and product == ADC_PRODUCT:
-        return 7, 'adc12', 'LA-RP2040 · ADC 示波器'
+    board, kind = PRODUCTS.get(product, ('', ''))
+    tag = 'LA-RP2040 V2' if board == 'v2' else 'LA-RP2040'
+    if pid == 0x000a and kind == 'sump8':
+        return 5, 'sump8', tag + ' · 8 通道逻辑分析仪'
+    if pid == 0x000a and kind == 'adc12':
+        return 7, 'adc12', tag + ' · ADC 示波器'
     return 6, 'bootsel' if pid == 0x0003 else 'unknown', 'RP2040 · BOOTSEL' if pid == 0x0003 else 'RP2040 · 未识别固件'
 
 
@@ -45,7 +71,8 @@ def discover(ports):
                 family='rp2040', profile=kind, mode=mode, serial=serial, product=product,
                 vid='2E8A', pid=f'{dev.idProduct:04X}', bcd=dev.bcdDevice,
                 version=product or '固件版本待确认', port=port['path'] if port else '',
-                board_match=product in (LOGIC_PRODUCT, ADC_PRODUCT, DAP_PRODUCT)))
+                board=board_of(product),
+                board_match=product in PRODUCTS))
     except Exception:
         pass  # CDC enumeration remains useful without a libusb backend.
     for port in ports:
@@ -57,18 +84,20 @@ def discover(ports):
         mode, kind, name = profile(port['pid'], product)
         found.append(dict(id='rp:serial:'+port['path'], name=name, family='rp2040', profile=kind,
             mode=mode, serial=port['serial'] or '', product=product, vid='2E8A', pid=f"{port['pid']:04X}",
-            bcd=0, version=product, port=port['path'], board_match=product in (LOGIC_PRODUCT, ADC_PRODUCT, DAP_PRODUCT)))
+            bcd=0, version=product, port=port['path'], board=board_of(product),
+                board_match=product in PRODUCTS))
     return found, warnings
 
 
-def validate_capture(params, analog=False):
+def validate_capture(params, analog=False, board='v1'):
     from .core import integer, UserError
     p = dict(params)
     rates = ADC_RATES if analog else LOGIC_RATES
     p['rate'] = integer(p.get('rate', 100000 if analog else 1000000), min(rates), max(rates), '采样率')
     if p['rate'] not in rates:
         raise UserError('请选择支持的采样率，避免时钟量化误差')
-    p['samples'] = integer(p.get('samples', 4096), 4, 32768 if analog else 100000, '采样点数')
+    limit = 32768 if analog else BOARDS[board if board in BOARDS else 'v1']['logic_max']
+    p['samples'] = integer(p.get('samples', 4096), 4, limit, '采样点数')
     if not analog and p['samples'] % 4:
         raise UserError('逻辑采样点数必须为 4 的倍数')
     p['timeout'] = integer(p.get('timeout', 15), 2, 60, '等待超时秒数')
@@ -186,13 +215,14 @@ def measurements(values, vref):
         note='按参考电压换算；未校准。12 bit 为码宽，不代表有效精度。')
 
 
-def exports(samples, rate):
-    rows = ['time_s,'+','.join(f'D{i}_GP{20+i}' for i in range(8))]
+def exports(samples, rate, board='v1'):
+    names = logic_names(board)
+    rows = ['time_s,'+','.join(names)]
     rows += [f'{n/rate:.9f},'+','.join(str(v>>i&1) for i in range(8)) for n,v in enumerate(samples)]
     yield 'logic.csv', ('\n'.join(rows)+'\n').encode()
     ids = 'abcdefgh'
     vcd = ['$timescale 1 ns $end','$scope module LA_RP2040 $end']
-    vcd += [f'$var wire 1 {ids[i]} D{i}_GP{20+i} $end' for i in range(8)]
+    vcd += [f'$var wire 1 {ids[i]} {names[i]} $end' for i in range(8)]
     vcd += ['$upscope $end','$enddefinitions $end']
     previous = None
     for n, value in enumerate(samples):
@@ -206,7 +236,7 @@ def exports(samples, rate):
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
         z.writestr('version', '2')
         meta = f'[global]\nsigrok version=0.5.2\n\n[device 1]\ncapturefile=logic-1\nunitsize=1\ntotal probes=8\nsamplerate={rate} Hz\n'
-        meta += ''.join(f'probe{i+1}=D{i}_GP{20+i}\n' for i in range(8))
+        meta += ''.join(f'probe{i+1}={names[i]}\n' for i in range(8))
         z.writestr('metadata',meta); z.writestr('logic-1-1', samples)
     yield 'logic.sr', archive.getvalue()
 

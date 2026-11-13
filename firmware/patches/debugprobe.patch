@@ -1,11 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6a9060a..5e160a0 100644
+index 6a9060a..c5fb210 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -89,3 +89,8 @@ target_link_libraries(debugprobe PRIVATE
+@@ -89,3 +89,13 @@ target_link_libraries(debugprobe PRIVATE
  pico_set_binary_type(debugprobe copy_to_ram)
  
  pico_add_extra_outputs(debugprobe)
++
++# LA_BOARD=v2: LA_RP2040 V2 (official Debug Probe pin map plus level-shifted target reset).
++if (LA_BOARD STREQUAL "v2")
++    target_compile_definitions(debugprobe PRIVATE LA_BOARD_V2=1)
++endif ()
 +
 +# No C++ runtime is used; Pico SDK provides allocation overrides.
 +set_target_properties(debugprobe PROPERTIES LINKER_LANGUAGE C)
@@ -40,6 +45,35 @@ index 535d91f..47937a2 100755
 +#define PROBE_VERSION "la-rp2040-0.2.0+262f962"
  #endif
  EOF
+diff --git a/include/board_debug_probe_config.h b/include/board_debug_probe_config.h
+index 180f3da..e65e1a3 100644
+--- a/include/board_debug_probe_config.h
++++ b/include/board_debug_probe_config.h
+@@ -28,7 +28,13 @@
+ 
+ #define PROBE_IO_SWDI
+ #define PROBE_CDC_UART
++#ifdef LA_BOARD_V2
++// LA_RP2040 V2: nRESET is IO2 = GP20 through a 74LVC1T45 whose direction is GP21 (low = input).
++#define PROBE_PIN_RESET 20
++#define PROBE_PIN_RESET_DIR 21
++#else
+ // No reset pin 
++#endif
+ 
+ // PIO config
+ #define PROBE_SM 0
+@@ -50,6 +56,10 @@
+ #define PROBE_UART_RX_LED DEBUG_PROBE_UART_RX_LED_PIN
+ #define PROBE_UART_TX_LED DEBUG_PROBE_UART_TX_LED_PIN
+ 
++#ifdef LA_BOARD_V2
++#define PROBE_PRODUCT_STRING "LA-RP2040 V2 CMSIS-DAP"
++#else
+ #define PROBE_PRODUCT_STRING "Debug Probe (CMSIS-DAP)"
++#endif
+ 
+ #endif
 diff --git a/include/board_pico_config.h b/include/board_pico_config.h
 index f732fb7..d7ba3ab 100644
 --- a/include/board_pico_config.h
@@ -72,4 +106,56 @@ index f732fb7..d7ba3ab 100644
 -#define PROBE_PRODUCT_STRING "Debugprobe on Pico (CMSIS-DAP)"
 +#define PROBE_PRODUCT_STRING "LA-RP2040 CMSIS-DAP"
  
+ #endif
+diff --git a/src/probe.c b/src/probe.c
+index dbe0ea8..1a960b5 100644
+--- a/src/probe.c
++++ b/src/probe.c
+@@ -75,8 +75,20 @@ void probe_assert_reset(bool state)
+ {
+ #if defined(PROBE_PIN_RESET)
+     /* Change the direction to out to drive pin to 0 or to in to emulate open drain */
++#if defined(PROBE_PIN_RESET_DIR)
++    /* Level-shifted reset: drive the 3V3 side low before turning the translator towards the target,
++     * and turn it back to input before releasing, so the target never sees a driven high. */
++    if (state == 0) {
++        gpio_set_dir(PROBE_PIN_RESET, GPIO_OUT);
++        gpio_put(PROBE_PIN_RESET_DIR, 1);
++    } else {
++        gpio_put(PROBE_PIN_RESET_DIR, 0);
++        gpio_set_dir(PROBE_PIN_RESET, GPIO_IN);
++    }
++#else
+     gpio_set_dir(PROBE_PIN_RESET, state == 0 ? GPIO_OUT : GPIO_IN);
+ #endif
++#endif
+ }
+ 
+ int probe_reset_level(void)
+diff --git a/src/probe.pio b/src/probe.pio
+index 5636c0c..1253b19 100644
+--- a/src/probe.pio
++++ b/src/probe.pio
+@@ -78,6 +78,12 @@ static inline void probe_gpio_init()
+     gpio_pull_up(PROBE_PIN_RESET);
+     // gpio_init will leave the pin cleared and set as input
+     gpio_init(PROBE_PIN_RESET);
++#if defined(PROBE_PIN_RESET_DIR)
++    // translator direction: low = target drives the 3V3 side (reset released)
++    gpio_init(PROBE_PIN_RESET_DIR);
++    gpio_put(PROBE_PIN_RESET_DIR, 0);
++    gpio_set_dir(PROBE_PIN_RESET_DIR, GPIO_OUT);
++#endif
+ #endif
+     // Funcsel pins
+     pio_gpio_init(pio0, PROBE_PIN_SWCLK);
+@@ -90,6 +96,9 @@ static inline void probe_gpio_init()
+ static inline void probe_gpio_deinit()
+ {
+ #if defined(PROBE_PIN_RESET)
++#if defined(PROBE_PIN_RESET_DIR)
++	gpio_put(PROBE_PIN_RESET_DIR, 0);
++#endif
+ 	gpio_deinit(PROBE_PIN_RESET);
+ 	gpio_disable_pulls(PROBE_PIN_RESET);
  #endif

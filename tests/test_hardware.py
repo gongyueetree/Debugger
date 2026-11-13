@@ -11,17 +11,21 @@ class HardwareSourceTest(unittest.TestCase):
    for path,sha in board['source_files'].items():self.assertEqual(hashlib.sha256((base/key/'source'/path).read_bytes()).hexdigest(),sha)
    for path,sha in board['assets'].items():self.assertEqual(hashlib.sha256((base/key/path).read_bytes()).hexdigest(),sha)
  def test_geometry_matches_source_with_two_physical_sides(self):
-  for key,name in [('ch347','CH347_SPI'),('rp2040','LA_rp2040')]:
-   base=ROOT/'dist/hardware'/key;g=board_data(base/'source'/f'{name}.kicad_pcb');self.assertEqual(g,json.loads((base/'geometry.json').read_text()));pads=next(c['pads'] for c in g['connectors'] if c['ref']=='J2');self.assertEqual(len(pads),12)
+  for key,name,count in [('ch347','CH347_SPI',12),('rp2040','LA_rp2040',12),('rp2040v2','LA_RP2040_V2',16)]:
+   base=ROOT/'dist/hardware'/key;g=board_data(base/'source'/f'{name}.kicad_pcb');self.assertEqual(g,json.loads((base/'geometry.json').read_text()));pads=next(c['pads'] for c in g['connectors'] if c['ref']=='J2');self.assertEqual(len(pads),count)
    for pad in pads:self.assertIn('F.Cu' if int(pad['number'])%2 else 'B.Cu',pad['layers'])
-   for i in range(1,12,2):
+   for i in range(1,count,2):
     a=next(p for p in pads if p['number']==str(i));b=next(p for p in pads if p['number']==str(i+1));self.assertEqual((a['x'],a['y']),(b['x'],b['y']))
  def test_zip_has_original_engineering_files_only(self):
-  for key,archive in [('ch347','CH347_Debug.zip'),('rp2040','LA_RP2040.zip')]:
+  for key,archive in [('ch347','CH347_Debug.zip'),('rp2040','LA_RP2040.zip'),('rp2040v2','LA_RP2040_V2.zip')]:
    base=ROOT/'dist/hardware'/key
    with zipfile.ZipFile(base/archive) as z:
     self.assertEqual(len(z.namelist()),3)
     for name in z.namelist():self.assertEqual(z.read(name),(base/'source'/Path(name).name).read_bytes())
  def test_glb_contains_geometry_and_material_colors(self):
-  for key in ['ch347','rp2040']:
+  for key in ['ch347','rp2040','rp2040v2']:
    raw=(ROOT/'dist/hardware'/key/'board.glb').read_bytes();magic,version,size=struct.unpack_from('<4sII',raw);self.assertEqual((magic,version,size),(b'glTF',2,len(raw)));n=struct.unpack_from('<I',raw,12)[0];doc=json.loads(raw[20:20+n]);self.assertGreater(len(doc['materials']),10);self.assertIn('original silkscreen',doc['nodes'][0]['name']);self.assertGreater(sum(a['count'] for a in doc['accessors'] if a['type']=='SCALAR'),30000)
+ def test_v2_viewer_sources_are_the_generated_project(self):
+  for ext in ['kicad_pcb','kicad_sch','kicad_pro']:
+   self.assertEqual((ROOT/'dist/hardware/rp2040v2/source'/f'LA_RP2040_V2.{ext}').read_bytes(),(ROOT/'hardware/la-rp2040-v2/kicad'/f'LA_RP2040_V2.{ext}').read_bytes())
+

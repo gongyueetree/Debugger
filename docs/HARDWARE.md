@@ -1,5 +1,7 @@
 # 硬件工程、可视化与引脚
 
+> 工作台现在有三块板：CH347 Debugger、LA RP2040 V1 和 LA RP2040 V2。V2（电平转换、端口保护、16 Pin 接口、外壳，兼容官方 Debug Probe 固件）的工程由 [`hardware/la-rp2040-v2/`](../hardware/la-rp2040-v2/README.md) 生成，查看器资源在 `dist/hardware/rp2040v2/`，接线见 [RP2040.md](RP2040.md)。下面的 J2 表格是 CH347 和 V1 的 12 脚接口。
+
 工作台和左侧「工具汇总」均提供 CH347 Debugger 与 LA RP2040 的原始 KiCad 9 工程、带图纸外框和标题栏的可缩放原理图、PCB 双层叠加 / 正反面与交互式 3D 装配视图。启动本地 Agent 后也可离线查看，无需 CDN 或在线模型服务。
 
 ## 文件与来源
@@ -40,7 +42,7 @@ CH347 原生 SWD 与芯片版本和驱动相关。本工程只标注 JTAG 网络
 正常运行无需 KiCad、Node 或 numpy。仅重建预览时需要完整安装 KiCad 9（包括 3D 插件和官方模型库）、Python numpy：
 
 ```bash
-python scripts/build_hardware_assets.py --kicad-cli kicad-cli --models-dir /path/to/kicad-packages3D
+python scripts/build_hardware_assets.py --kicad-cli kicad-cli --models-dir /path/to/kicad-packages3D   # 加 --boards rp2040v2 只重建 V2
 cd scripts/viewer
 npm ci
 npm run build

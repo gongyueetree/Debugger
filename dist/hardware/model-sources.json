@@ -96,6 +96,42 @@
     "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Crystal.3dshapes/Crystal_SMD_Abracon_ABM8G-4Pin_3.2x2.5mm.wrl"
   },
   {
+    "path": "Diode_SMD.3dshapes/D_SOD-323.step",
+    "sha256": "6c72b6baeee0baa9075c149ba2e76f711328315273e81580dbd57fb36a86c1e3",
+    "bytes": 105189,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Diode_SMD.3dshapes/D_SOD-323.step"
+  },
+  {
+    "path": "Diode_SMD.3dshapes/D_SOD-323.wrl",
+    "sha256": "7a94b3fda3dbdbdf8a0b7c7f4fad358f1bdca6e9f3e1fe0e9496cbbfe82da456",
+    "bytes": 29338,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Diode_SMD.3dshapes/D_SOD-323.wrl"
+  },
+  {
+    "path": "Fuse.3dshapes/Fuse_0603_1608Metric.step",
+    "sha256": "2178c56deff687266eecad5e197b7ab2d230afae45def1320cff0ea839f46b49",
+    "bytes": 40633,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Fuse.3dshapes/Fuse_0603_1608Metric.step"
+  },
+  {
+    "path": "Fuse.3dshapes/Fuse_0603_1608Metric.wrl",
+    "sha256": "d108172b4aeb5fcf05da6de79e2f07719719c867fe874b47370936e1dc9e1ec1",
+    "bytes": 14831,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Fuse.3dshapes/Fuse_0603_1608Metric.wrl"
+  },
+  {
+    "path": "Fuse.3dshapes/Fuse_0805_2012Metric.step",
+    "sha256": "bd29ccc62530d3bcfbbe078f12aac2a99ac75d01c043a2723a4bd36540aac146",
+    "bytes": 40883,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Fuse.3dshapes/Fuse_0805_2012Metric.step"
+  },
+  {
+    "path": "Fuse.3dshapes/Fuse_0805_2012Metric.wrl",
+    "sha256": "b1a2d938a1f72a45000fbd94f3bad9ce8c427e295470b327528318eaef425f73",
+    "bytes": 14831,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Fuse.3dshapes/Fuse_0805_2012Metric.wrl"
+  },
+  {
     "path": "Inductor_SMD.3dshapes/L_0603_1608Metric.step",
     "sha256": "b0136ad7160588d2f5dac8c85da84a35646db656b5bc54bbb873b6b548eedbb3",
     "bytes": 43450,
@@ -156,6 +192,18 @@
     "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_SO.3dshapes/TSSOP-20_4.4x6.5mm_P0.65mm.wrl"
   },
   {
+    "path": "Package_SON.3dshapes/Winbond_USON-8-1EP_3x2mm_P0.5mm_EP0.2x1.6mm.step",
+    "sha256": "a661d4f73911602c49ec0dbe79117eabfd4084bafc87c10d9a35acb96c4cf253",
+    "bytes": 108363,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_SON.3dshapes/Winbond_USON-8-1EP_3x2mm_P0.5mm_EP0.2x1.6mm.step"
+  },
+  {
+    "path": "Package_SON.3dshapes/Winbond_USON-8-1EP_3x2mm_P0.5mm_EP0.2x1.6mm.wrl",
+    "sha256": "5ab77c05db0ed65c7caa59009747af7191429f72a70fc448289f4a9b7cb99ecf",
+    "bytes": 31457,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_SON.3dshapes/Winbond_USON-8-1EP_3x2mm_P0.5mm_EP0.2x1.6mm.wrl"
+  },
+  {
     "path": "Package_TO_SOT_SMD.3dshapes/SOT-23-5.step",
     "sha256": "3b70f1b6dd947543fda90b947f91f2e2804766c39b78e56c87f1448dfd575ed8",
     "bytes": 174941,
@@ -168,6 +216,42 @@
     "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-23-5.wrl"
   },
   {
+    "path": "Package_TO_SOT_SMD.3dshapes/SOT-23-6.step",
+    "sha256": "9491de18305b16fe125ee3d603109a29edd837d50d22305b6f929886492ce755",
+    "bytes": 199168,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-23-6.step"
+  },
+  {
+    "path": "Package_TO_SOT_SMD.3dshapes/SOT-23-6.wrl",
+    "sha256": "01fe842f8ca8534456b365e2a38b77b8c61a07e4133d79187d0df9d46037051b",
+    "bytes": 56359,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-23-6.wrl"
+  },
+  {
+    "path": "Package_TO_SOT_SMD.3dshapes/SOT-323_SC-70.step",
+    "sha256": "3ccf342a062c38df7477ec028593896c8f99ccef44da2697cd1e135bdd1226df",
+    "bytes": 119383,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-323_SC-70.step"
+  },
+  {
+    "path": "Package_TO_SOT_SMD.3dshapes/SOT-323_SC-70.wrl",
+    "sha256": "3b514f453357a27095160ee5091143e66cadd4be1a3659ce70f6162a115f5ade",
+    "bytes": 34217,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-323_SC-70.wrl"
+  },
+  {
+    "path": "Package_TO_SOT_SMD.3dshapes/SOT-363_SC-70-6.step",
+    "sha256": "1d5b719ce586ec4c24554952e3c7a77f3e96a2db374039a9ed967c7eee938fc8",
+    "bytes": 185034,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-363_SC-70-6.step"
+  },
+  {
+    "path": "Package_TO_SOT_SMD.3dshapes/SOT-363_SC-70-6.wrl",
+    "sha256": "10a00aa475033a7756ab6edd338cb5234e6473aaf493811ea7c309ef41de5b5d",
+    "bytes": 52585,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Package_TO_SOT_SMD.3dshapes/SOT-363_SC-70-6.wrl"
+  },
+  {
     "path": "Resistor_SMD.3dshapes/R_0201_0603Metric.step",
     "sha256": "33893da67f0e1d523ba6096fc78c9fb67e7770efb072fcf51f480f9365706a1d",
     "bytes": 40756,
@@ -178,6 +262,18 @@
     "sha256": "7f59a0e85d2d07e2fbab2892993613443385df51da192c0d800f5199fec054d3",
     "bytes": 14827,
     "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Resistor_SMD.3dshapes/R_0201_0603Metric.wrl"
+  },
+  {
+    "path": "Resistor_SMD.3dshapes/R_0402_1005Metric.step",
+    "sha256": "91507e5af4251cb4ef38e04889c9b98da29904432bd83786bba13ae9b605eacb",
+    "bytes": 40756,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Resistor_SMD.3dshapes/R_0402_1005Metric.step"
+  },
+  {
+    "path": "Resistor_SMD.3dshapes/R_0402_1005Metric.wrl",
+    "sha256": "ce89655575a3858f28f001c08aed3f4e4a4b85833d9d3366e0902e44e8d0ebd8",
+    "bytes": 14831,
+    "url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/9.0.0/Resistor_SMD.3dshapes/R_0402_1005Metric.wrl"
   },
   {
     "path": "Resistor_SMD.3dshapes/R_0603_1608Metric.step",

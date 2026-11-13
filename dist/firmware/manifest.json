@@ -1,6 +1,6 @@
 {
-  "version": "0.2.0",
-  "board": "LA_RP2040",
+  "version": "0.3.0",
+  "board": "LA_RP2040 (V1)",
   "flash_bytes": 8388608,
   "boot_stage2": "generic SPI 0x03",
   "sdk": {
@@ -36,6 +36,50 @@
       "bytes": 47104,
       "sha256": "2d60a8e9e4621bde7e2e08e0c080178dadaf1fe6ed728e4a282f7652a119ca86",
       "binary_bytes": 23304,
+      "build": "compiled",
+      "hardware_validation": "pending"
+    }
+  ],
+  "boards": {
+    "v1": {
+      "board": "LA_RP2040",
+      "flash_bytes": 8388608,
+      "pico_board": "pico",
+      "firmwares": "firmwares"
+    },
+    "v2": {
+      "board": "LA_RP2040 V2",
+      "flash_bytes": 2097152,
+      "pico_board": "debug_probe",
+      "firmwares": "firmwares_v2",
+      "note": "Level-shifted board with the official Debug Probe pin map; logic capture stores 32-bit samples (50000 max)."
+    }
+  },
+  "firmwares_v2": [
+    {
+      "profile": "dap",
+      "filename": "la-rp2040-v2-dap.uf2",
+      "bytes": 107520,
+      "sha256": "287ca64e808ea6edb486bad7f6539a31d5384a45c66c35e5690da6c2f6e549c4",
+      "binary_bytes": 53760,
+      "build": "compiled",
+      "hardware_validation": "pending"
+    },
+    {
+      "profile": "sump8",
+      "filename": "la-rp2040-v2-sump8.uf2",
+      "bytes": 125440,
+      "sha256": "e82173ba43334f6afba2aab405ddb6640d4a9814faad48bad6fdaadf493ca0ad",
+      "binary_bytes": 62720,
+      "build": "compiled",
+      "hardware_validation": "pending"
+    },
+    {
+      "profile": "adc12",
+      "filename": "la-rp2040-v2-adc12.uf2",
+      "bytes": 47104,
+      "sha256": "04e2c62ef7f440fd09e039591a4a7560961165a882a02b81f1869bb878cf1923",
+      "binary_bytes": 23552,
       "build": "compiled",
       "hardware_validation": "pending"
     }

@@ -14,3 +14,9 @@ agent-runtime/.cache/
 # Local hosting identity and generated runtime files
 .openai/
 .DS_Store
+
+# Hardware generator scratch output
+hardware/la-rp2040-v2/build/
+hardware/**/*.kicad_prl
+hardware/**/fp-info-cache
+hardware/**/*-backups/

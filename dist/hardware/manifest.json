@@ -57,6 +57,30 @@
       },
       "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
       "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."
+    },
+    "rp2040v2": {
+      "width": 58.0,
+      "height": 21.0,
+      "thickness": 1.6,
+      "source_files": {
+        "LA_RP2040_V2.kicad_pcb": "17fa8922f68aefce16a15d7c079a9539c8d50e6c22bce69e2b9dca62250d3329",
+        "LA_RP2040_V2.kicad_pro": "046c6c462b885d2965bda191ce815a6eef7a6c832b811afb68d942ed2839023f",
+        "LA_RP2040_V2.kicad_sch": "66c4d3dee825fc17b96f1230085c0e50c7beb8b95fb2a555aebeb89d32d7dfdf"
+      },
+      "assets": {
+        "LA_RP2040_V2.zip": "b797f34d896a8e509497be207196a356a239827fbf7f3e03efd8c03a220efa64",
+        "board-render.png": "d95d5620f55ad5d5d6595e458fad7254ac6a452aed29290f849365efb50c0ead",
+        "board-top.png": "5cdcda3dab005df7c7799861bbb1acaae3dd9de3610e1d1b8694a82d370dfb14",
+        "board.glb": "d775177e474a0b8b541a758d55546a5d00c63ed8f59213be1691aa51fff63a6f",
+        "geometry.json": "f0d1feb7f4191641493e3c480f7e9a97c3360bc85d129948025cb550a14b4f90",
+        "pcb-back.svg": "d37667bde76b7d9df2663453f7c50301d62a6c8799faca6691d0ffb3cb2bb41f",
+        "pcb-front.svg": "090c2a910e6daa9e94c7889b8300d11609cc9ebcf3fca383950bce4b16866e7e",
+        "pcb-silk-back.svg": "5856fc8ce45e7d7044be0092e9f994da1959778f678f3f6cc94b8680f1ba9ea3",
+        "pcb-silk-front.svg": "bc57e48497ac631b68a5c38a95d062dbc152b8299a712d7f8f8073b9ba6d1894",
+        "schematic/LA_RP2040_V2.svg": "d7475e604b708afa2556f44a4c294dbe9fc2aae436b9f101fed84794c5a48634"
+      },
+      "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
+      "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."
     }
   },
   "glb_pipeline": "KiCad 9.0.9 embedded VRML → scripts/vrml_to_glb.py; retains source silkscreen, component geometry and library material colors"

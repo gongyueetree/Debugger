@@ -11,6 +11,11 @@
 #include "hardware/clocks.h"
 
 #define DEPTH 32768
+#ifdef LA_BOARD_V2
+#define STATUS_LED 16 // LA_RP2040 V2: yellow "RUN" LED; A0..A2 are clamped but not level-shifted
+#else
+#define STATUS_LED 0
+#endif
 static uint16_t samples[DEPTH];
 static uint32_t u32(const uint8_t *p) {
     return (uint32_t)p[0] | (uint32_t)p[1]<<8 | (uint32_t)p[2]<<16 | (uint32_t)p[3]<<24;
@@ -25,7 +30,7 @@ static bool allowed_rate(uint32_t r) {
 }
 int main(void) {
     stdio_init_all();
-    gpio_init(0); gpio_set_dir(0,GPIO_OUT);
+    gpio_init(STATUS_LED); gpio_set_dir(STATUS_LED,GPIO_OUT);
     adc_init();
     for(int pin=26;pin<=28;pin++) adc_gpio_init(pin);
     int channel=dma_claim_unused_channel(true);
@@ -55,7 +60,7 @@ int main(void) {
         channel_config_set_write_increment(&cfg,true);
         channel_config_set_dreq(&cfg,DREQ_ADC);
         dma_channel_configure(channel,&cfg,samples,&adc_hw->fifo,count,true);
-        gpio_put(0,1); adc_run(true);
+        gpio_put(STATUS_LED,1); adc_run(true);
         absolute_time_t until=make_timeout_time_ms(5000);
         bool cancelled=false;
         while(dma_channel_is_busy(channel)) {
@@ -67,7 +72,7 @@ int main(void) {
         adc_run(false);
         if(cancelled) dma_channel_abort(channel);
         uint32_t errors=(adc_hw->fcs & ADC_FCS_OVER_BITS) ? 2 : 0;
-        adc_fifo_drain(); gpio_put(0,0);
+        adc_fifo_drain(); gpio_put(STATUS_LED,0);
         if(cancelled) { if(stdio_usb_connected()) header("ADC1",rate,0,3); continue; }
         header("ADC1",rate,count,errors);
         if(errors) continue;
