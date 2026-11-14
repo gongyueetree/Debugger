@@ -17,10 +17,10 @@ class HardwareSourceTest(unittest.TestCase):
    for i in range(1,count,2):
     a=next(p for p in pads if p['number']==str(i));b=next(p for p in pads if p['number']==str(i+1));self.assertEqual((a['x'],a['y']),(b['x'],b['y']))
  def test_zip_has_original_engineering_files_only(self):
-  for key,archive in [('ch347','CH347_Debug.zip'),('rp2040','LA_RP2040.zip'),('rp2040v2','LA_RP2040_V2.zip')]:
+  for key,archive,count in [('ch347','CH347_Debug.zip',3),('rp2040','LA_RP2040.zip',3),('rp2040v2','LA_RP2040_V2.zip',5)]:  # V2 adds its symbol library + table
    base=ROOT/'dist/hardware'/key
    with zipfile.ZipFile(base/archive) as z:
-    self.assertEqual(len(z.namelist()),3)
+    self.assertEqual(len(z.namelist()),count)
     for name in z.namelist():self.assertEqual(z.read(name),(base/'source'/Path(name).name).read_bytes())
  def test_glb_contains_geometry_and_material_colors(self):
   for key in ['ch347','rp2040','rp2040v2']:

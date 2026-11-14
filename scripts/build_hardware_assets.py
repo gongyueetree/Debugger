@@ -25,6 +25,8 @@ def main():
   if origin and not a.manifest_only:
    (d/'source').mkdir(parents=True,exist_ok=True)
    for ext in ['kicad_pcb','kicad_sch','kicad_pro']:(d/'source'/f'{name}.{ext}').write_bytes((origin/f'{name}.{ext}').read_bytes())
+   for extra in [f'{name}.kicad_sym','sym-lib-table']:
+    if (origin/extra).exists():(d/'source'/extra).write_bytes((origin/extra).read_bytes())
   if not a.manifest_only:
    (d/'geometry.json').write_text(json.dumps(board_data(pcb),ensure_ascii=False,indent=2)+'\n')
    run('sch','export','svg','-o',d/'schematic',sch)

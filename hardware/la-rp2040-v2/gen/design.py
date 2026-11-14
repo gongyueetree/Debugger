@@ -44,9 +44,9 @@ def C(ref, value, a, b, pcb, sch, fp=C0402):
     comp(ref, 'Device:C', value, fp, {1: a, 2: b}, pcb, sch + (90,), mpn=f'{size} {value} X5R/X7R (15pF: C0G)')
 
 
-# ───────────────────────── schematic layout helpers ─────────────────────────
+# The `sch` argument of every part below is no longer used: the drawing positions live in sch_layout.py.
 def col(x, y0, pitch=7.62):
-    """Yield successive schematic positions down a column."""
+    """Yield successive positions down a column (legacy schematic argument)."""
     i = 0
     while True:
         yield (x, y0 + i * pitch)
@@ -285,9 +285,14 @@ comp('J2', 'Connector_Generic:Conn_02x08_Odd_Even', 'Target 2x8', f'{LIB}:PinHea
 comp('H1', 'Mechanical:MountingHole', 'M2', 'MountingHole:MountingHole_2.2mm_M2', {}, (3.4, 2.4, 0, 'F'), (401.32, 231.14, 0))
 comp('H2', 'Mechanical:MountingHole', 'M2', 'MountingHole:MountingHole_2.2mm_M2', {}, (3.4, 18.6, 0, 'F'), (401.32, 241.3, 0))
 
-# nets that need a PWR_FLAG for ERC (driven through passives/connectors)
-PWR_FLAGS = {'GND': (337.82, 233.68), '+5V': (347.98, 233.68), 'VIO': (358.14, 233.68), 'VBUS': (368.3, 233.68),
-             'ADC_AVDD': (378.46, 233.68)}
+# Parts turned by 180 degrees relative to the positions above, so that each pad faces the pad it is wired to.
+# The list comes from gen/orient.py (shortest pad-to-pad distance per part); re-run it after moving parts.
+ORIENT_FLIP = ['C1', 'C14', 'C30', 'D8', 'D9', 'R7', 'R9', 'R10', 'R11', 'R12', 'R13', 'R14', 'R40', 'R50', 'R51',
+               'R52', 'R53', 'R54', 'R60', 'R62', 'R64']
+for _c in COMPONENTS:
+    if _c['ref'] in ORIENT_FLIP:
+        x, y, rot, side = _c['pcb']
+        _c['pcb'] = (x, y, (rot + 180) % 360, side)
 
 # routing classes: net → track width (mm).  GND is the In1 plane.
 PLANES = {'GND': 'In1.Cu', '+3V3': 'In2.Cu'}
@@ -327,18 +332,3 @@ TRANSLATOR_VIA_DX = 2.2
 PRE_LINKS += [(net, 'B.Cu', f'{u}.v5', f'{r}.2', 0.2) for net, u, r in
               (('DIR0', 'U5', 'R30'), ('DIR1', 'U6', 'R31'), ('DIR2', 'U8', 'R32'), ('DIR3', 'U9', 'R33'),
                ('DIR4', 'U10', 'R34'), ('DIR567', 'U11', 'R35'))]
-
-SCH_NOTES = [
-    (15.24, 20.32, 2.5, 'USB-C INPUT / POWER'),
-    (15.24, 96.52, 2.5, 'QSPI FLASH / BOOTSEL / CRYSTAL / MCU DECOUPLING'),
-    (15.24, 187.96, 2.5, 'STATUS LEDS (official Debug Probe GPIOs)'),
-    (175.26, 49.53, 2.5, 'RP2040 — pin map compatible with Raspberry Pi Debug Probe firmware'),
-    (259.08, 20.32, 2.5, 'LEVEL-SHIFTED IO0..IO7  (A = 3V3 side, B = VIO side, DIR high = output)'),
-    (259.08, 148.59, 2.5, 'SERIES / DIR DEFAULT / IDLE-LEVEL RESISTORS, DECOUPLING'),
-    (109.22, 181.61, 2.5, 'TARGET CONNECTOR / ESD'),
-    (167.64, 220.98, 2.5, 'VIO SELECT / SENSE / +5V OUT'),
-    (15.24, 251.46, 2.5, 'ANALOG INPUT CLAMPS (0..3.3 V)'),
-    (259.08, 24.13, 1.5, 'IO0=SWCLK(GP12)  IO1=SWDIO(out GP14, in GP13)  IO2=nRESET(GP20)  IO3=UART TX(GP4)  IO4=UART RX(GP5)'),
-    (259.08, 27.305, 1.5, 'IO5..IO7=GP23..GP25   DIR0..DIR4=GP18,GP19,GP21,GP22,GP9   DIR5-7 (shared)=GP10'),
-    (15.24, 24.13, 1.5, 'CC1/CC2 each have their own 5.1k Rd (0402, 1%) so USB-C to USB-C hosts enable VBUS.'),
-]

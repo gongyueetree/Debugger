@@ -26,7 +26,7 @@ test('V2 is the default RP2040 board and its wiring agrees with the generated PC
  const pads=geometry('rp2040v2').connectors.find(c=>c.ref==='J2').pads,net=pin=>pads.find(x=>+x.number===+pin).net;
  assert.equal(rpKey(null),'rp2040v2');assert.equal(rpKey({family:'rp2040',board:'v2'}),'rp2040v2');assert.equal(rpKey({family:'rp2040',board:'v1'}),'rp2040');assert.equal(pads.length,16);assert.equal(BOARDS.rp2040v2.pins.length,16);
  const logic=pinProfile('logic',5,{trigger:'rising',trigger_channel:3});assert.equal(logic.board,'rp2040v2');
- RP.rp2040v2.logicPins.forEach((pin,i)=>{assert.equal(net(pin),'/IO'+i);assert.equal(logic.active[pin].signal,`D${i} · GP${RP.rp2040v2.logicGpio[i]}`);});assert.equal(logic.active[9].kind,'trigger');assert.equal(net(1),'/VIO');
+ RP.rp2040v2.logicPins.forEach((pin,i)=>{assert.equal(net(pin),'/IO'+i);assert.equal(logic.active[pin].signal,`D${i} · GP${RP.rp2040v2.logicGpio[i]}`);});assert.equal(logic.active[9].kind,'trigger');assert.equal(net(1),'VIO');
  for(let channel=0;channel<3;channel++){const p=pinProfile('scope',7,{channel}),pin=RP.rp2040v2.adcPins[channel];assert.equal(net(pin),'/AIN'+channel);assert.match(p.active[pin].signal,new RegExp('ADC'+channel));}
  const dap=pinProfile('mcu',4,{transport:'swd'});assert.match(dap.active[3].signal,/SWCLK/);assert.equal(net(3),'/IO0');assert.match(dap.active[5].signal,/SWDIO/);assert.equal(net(5),'/IO1');assert.match(dap.active[7].signal,/nRESET/);assert.equal(net(7),'/IO2');
  const uart=pinProfile('uart',4,{});assert.match(uart.active[9].signal,/^TX/);assert.equal(net(9),'/IO3');assert.match(uart.active[11].signal,/^RX/);assert.equal(net(11),'/IO4');
