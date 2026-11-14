@@ -63,21 +63,23 @@
       "height": 21.0,
       "thickness": 1.6,
       "source_files": {
-        "LA_RP2040_V2.kicad_pcb": "17fa8922f68aefce16a15d7c079a9539c8d50e6c22bce69e2b9dca62250d3329",
-        "LA_RP2040_V2.kicad_pro": "046c6c462b885d2965bda191ce815a6eef7a6c832b811afb68d942ed2839023f",
-        "LA_RP2040_V2.kicad_sch": "66c4d3dee825fc17b96f1230085c0e50c7beb8b95fb2a555aebeb89d32d7dfdf"
+        "LA_RP2040_V2.kicad_pcb": "412000f9c92f89e47f4df007ea0bd5e4a9f0b9564579688ef197ff8c6629030f",
+        "LA_RP2040_V2.kicad_pro": "38a6ae8cb6d586a3622d4fff9aa76c5b70ba8b115490da0f68b4bf06e8b2f483",
+        "LA_RP2040_V2.kicad_sch": "cfb070cf58f92d3dd66eb5191a14ed3c6f8559c587cefe21e77d1a8c7470b1f9",
+        "LA_RP2040_V2.kicad_sym": "ff137538b28db3fa4ad85f77bb191ae2334a9aa95065bdad3556783bddbbef74",
+        "sym-lib-table": "31eb634031d36a5b7c1a2a4444089af1d8df6fcccca16cd28e42c6bffdecf1f4"
       },
       "assets": {
-        "LA_RP2040_V2.zip": "b797f34d896a8e509497be207196a356a239827fbf7f3e03efd8c03a220efa64",
-        "board-render.png": "d95d5620f55ad5d5d6595e458fad7254ac6a452aed29290f849365efb50c0ead",
-        "board-top.png": "5cdcda3dab005df7c7799861bbb1acaae3dd9de3610e1d1b8694a82d370dfb14",
-        "board.glb": "d775177e474a0b8b541a758d55546a5d00c63ed8f59213be1691aa51fff63a6f",
-        "geometry.json": "f0d1feb7f4191641493e3c480f7e9a97c3360bc85d129948025cb550a14b4f90",
-        "pcb-back.svg": "d37667bde76b7d9df2663453f7c50301d62a6c8799faca6691d0ffb3cb2bb41f",
-        "pcb-front.svg": "090c2a910e6daa9e94c7889b8300d11609cc9ebcf3fca383950bce4b16866e7e",
-        "pcb-silk-back.svg": "5856fc8ce45e7d7044be0092e9f994da1959778f678f3f6cc94b8680f1ba9ea3",
-        "pcb-silk-front.svg": "bc57e48497ac631b68a5c38a95d062dbc152b8299a712d7f8f8073b9ba6d1894",
-        "schematic/LA_RP2040_V2.svg": "d7475e604b708afa2556f44a4c294dbe9fc2aae436b9f101fed84794c5a48634"
+        "LA_RP2040_V2.zip": "71a131b2fcfe65797b202c95b577587749c235a268758b26c7290d7b9794716b",
+        "board-render.png": "42eb4111b18d556e802271a682e1524e36c6f94886d9cd27a5c89843bd48b425",
+        "board-top.png": "15db9faa808fbd042ddf55f5416b801c0e7259bc52770a8e5621739390501d08",
+        "board.glb": "3d86a58a12f48f6e9a91076e1412c34bc309f4d7a73bf5f5a0bb3a34e761c96b",
+        "geometry.json": "8b63ea68fa7e94bf6e00014fb852b0e2a611dae3d6a1a4fe197fe189f02e00f9",
+        "pcb-back.svg": "538b3a71703eacf3aeac623d1a99bc7a1d4abb22c02def54d9b1ec46fd614a85",
+        "pcb-front.svg": "65ae4d3eb3362bbcbbb30d4c23a535741ebfd56ee83fcf5e37f0580bc821ca45",
+        "pcb-silk-back.svg": "67622833d68ddb1767b80fefee065b9084e4ed979bcf2bce33f0c595c5ebdc99",
+        "pcb-silk-front.svg": "cecba2ce8357ace08d713fe0d024e5c7f6ddb6c905c1431c19324b13a1f6980a",
+        "schematic/LA_RP2040_V2.svg": "fd0fb29792ac51231865f0bec9c89252dca4285beba1d0ec800f0894206ae5b3"
       },
       "connector": "J2; odd pins F.Cu, even pins B.Cu; pairs share XY coordinates",
       "pcb_back_view": "Raw SVG is the back layer seen through the top; browser mirrors X for a physical bottom view."

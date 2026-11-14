@@ -26,10 +26,15 @@ kicad/      KiCad 9 工程（原理图、PCB、工程文件、J2 封装库）
 fab/        Gerber + 钻孔 zip、贴片坐标、BOM、板子 STEP
 doc/        原理图 PDF/SVG、PCB 各层 SVG/PDF、渲染图
 enclosure/  外壳 CadQuery 源码、STEP、STL、视图
-gen/        生成脚本：design.py 是唯一数据源（器件、网表、布局）
+gen/        生成脚本：design.py 是唯一数据源（器件、网表、PCB 布局），sch_layout.py 是原理图的画法
 ```
 
-原理图和 PCB 都由 `gen/design.py` 生成，因此二者不会不一致。改动器件位置后需要 `gen/build.sh route` 重新布线；布线器对同一布局的结果是确定的，但布局变动后可能有个别连接布不通，需要调整 `ROUTE_ORDER` / `ROUTE_LAYER_COST` 或局部布局。可以直接用 KiCad 打开 `kicad/LA_RP2040_V2.kicad_pro` 手工修改；但重新运行 `gen/build.sh` 会覆盖手工改动，需要长期保留的修改请写进 `gen/design.py`。
+原理图和 PCB 都由 `gen/design.py` 生成，因此二者不会不一致。
+
+**原理图画法（A2 一页）：** 管脚之间用连线连接，不靠网络标号。`gen/gen_sch.py` 里有一个 1.27 mm 网格上的原理图走线器（正交走线、交叉不相连、T 形处加结点）：电源轨画成母线并在一处接电源符号，RP2040 的 GPIO 经一组平行线通道接到 LED、9 路电平转换和 ADC 输入，只有目标连接器 / ESD 一侧（IO0..IO7、AIN0..2、5V_OUT）用网络标号。每条连线网络上保留一个标号，使网络名与 PCB 一致。器件位置在 `gen/sch_layout.py`，生成后用 KiCad 导出网表与 `design.py` 逐脚核对。USB D+/D- 在 USBLC6 处画成穿过器件的两段（两侧同名标号），与 PCB 上走线穿过焊盘的做法一致。
+
+**器件朝向：** `gen/orient.py` 对每个两脚器件比较当前朝向与旋转 180° 后各焊盘到所连焊盘的距离，给出应翻转的器件清单（`design.py` 的 `ORIENT_FLIP`，本版 21 个，包括 5 个 LED 限流电阻）。翻转并重新布线后，走线总长由约 2240 mm 降到约 1790 mm，过孔由 285 个降到 269 个。挪动器件后应重新运行它。
+改动器件位置后需要 `gen/build.sh route` 重新布线；布线器对同一布局的结果是确定的，但布局变动后可能有个别连接布不通，需要调整 `ROUTE_ORDER` / `ROUTE_LAYER_COST` 或局部布局。可以直接用 KiCad 打开 `kicad/LA_RP2040_V2.kicad_pro` 手工修改；但重新运行 `gen/build.sh` 会覆盖手工改动，需要长期保留的修改请写进 `gen/design.py`。
 
 ## V1 问题分析：USB-C 直连找不到设备，A-to-C 线正常
 

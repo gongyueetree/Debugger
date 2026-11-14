@@ -43,7 +43,7 @@ pro = {
         "meta": {"version": 4},
         "net_colors": None,
         "netclass_assignments": None,
-        "netclass_patterns": [{"netclass": "Power", "pattern": p if p[0] == '+' or p == 'GND' else '/' + p} for p in power]},
+        "netclass_patterns": [{"netclass": "Power", "pattern": p if p[0] == '+' or p in ('GND', 'VIO') else '/' + p} for p in power]},
     "pcbnew": {"last_paths": {}, "page_layout_descr_file": ""},
     "schematic": {"legacy_lib_dir": "", "legacy_lib_list": []},
     "sheets": [],
